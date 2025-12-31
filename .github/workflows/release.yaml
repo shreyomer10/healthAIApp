@@ -1,0 +1,62 @@
+name: Android Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.4"
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Bump version
+        id: bump
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          tag_prefix: ""
+
+      # 5️⃣ Sync pubspec.yaml version with tag
+      - name: Update pubspec.yaml version
+        run: |
+          TAG=${{ steps.bump.outputs.new_tag }}
+          VERSION_CODE=$(echo $TAG | awk -F. '{printf("%d%02d%02d",$1,$2,$3)}')
+          sed -i "s/^version:.*/version: $TAG+$VERSION_CODE/" pubspec.yaml
+
+      - name: Commit version update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore: release ${{ steps.bump.outputs.new_tag }}" || echo "No changes"
+          git push
+
+      - name: Build APK
+        run: flutter build apk --release --split-per-abi --tree-shake-icons
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.bump.outputs.new_tag }}
+          name: Health AI v${{ steps.bump.outputs.new_tag }}
+          files: |
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
