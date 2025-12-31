@@ -1,0 +1,19 @@
+{
+
+   "welcome":"Welcome",
+   "theme":"Toggle theme",
+   "lang":"Select Your Language",
+
+  "searchHint": "Search any product",
+  "setting":"Settings",
+  "prof":"User Profile",
+  "scan": "Scan",
+  "history": "History",
+  "uploadGallery": "Upload from gallery",
+  "discarded": "Discarded",
+  "scanLooking": "Point the camera at ingredients",
+  "scanHold": "Hold steady…",
+  "scanStable": "Stable frame detected",
+  "scanCapturing": "Capturing…",
+  "scanCaptured": "Captured"
+}
