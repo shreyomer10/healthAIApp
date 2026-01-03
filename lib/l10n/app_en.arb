@@ -15,5 +15,40 @@
   "scanHold": "Hold steady…",
   "scanStable": "Stable frame detected",
   "scanCapturing": "Capturing…",
-  "scanCaptured": "Captured"
+  "scanCaptured": "Captured",
+
+  "welcomeBack": "Welcome back",
+  "loginToContinue": "Login to continue",
+  "login": "Login",
+  "or": "OR",
+  "signInWithGoogle": "Sign in with Google",
+  "email": "Email",
+  "password": "Password",
+  "camera": "Camera",
+  "gallery": "Gallery",
+
+
+
+    "createAccount": "Create account",
+    "signupSubtitle": "Fill in the details to get started",
+    "email": "Email",
+    "password": "Password",
+    "age": "Age",
+    "gender": "Gender",
+    "genderMale": "Male",
+    "genderFemale": "Female",
+    "genderNotPreferToSay": "Not prefer to say",
+    "alreadyHaveAccount": "Already have an account? Login",
+    "signupInstead":"Sign Up",
+    "editProfile":"Update Your Profile",
+    "newPassword":"Change Your Password",
+    "saveChanges":"Save Changes",
+
+  "settings": "Settings",
+  "theme": "Theme",
+  "language": "Language",
+  "system": "System",
+  "logout": "Logout"
+
+
 }

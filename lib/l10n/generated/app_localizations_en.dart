@@ -12,7 +12,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcome => 'Welcome';
 
   @override
-  String get theme => 'Toggle theme';
+  String get theme => 'Theme';
 
   @override
   String get lang => 'Select Your Language';
@@ -52,4 +52,79 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanCaptured => 'Captured';
+
+  @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
+  String get loginToContinue => 'Login to continue';
+
+  @override
+  String get login => 'Login';
+
+  @override
+  String get or => 'OR';
+
+  @override
+  String get signInWithGoogle => 'Sign in with Google';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get createAccount => 'Create account';
+
+  @override
+  String get signupSubtitle => 'Fill in the details to get started';
+
+  @override
+  String get age => 'Age';
+
+  @override
+  String get gender => 'Gender';
+
+  @override
+  String get genderMale => 'Male';
+
+  @override
+  String get genderFemale => 'Female';
+
+  @override
+  String get genderNotPreferToSay => 'Not prefer to say';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account? Login';
+
+  @override
+  String get signupInstead => 'Sign Up';
+
+  @override
+  String get editProfile => 'Update Your Profile';
+
+  @override
+  String get newPassword => 'Change Your Password';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get system => 'System';
+
+  @override
+  String get logout => 'Logout';
 }

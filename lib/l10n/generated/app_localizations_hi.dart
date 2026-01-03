@@ -18,7 +18,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get lang => 'अपनी भाषा चुनें';
 
   @override
-  String get searchHint => 'किसी भी उत्पाद को खोजें';
+  String get searchHint => 'कोई भी प्रोडक्ट खोजें';
 
   @override
   String get setting => 'सेटिंग्स';
@@ -27,7 +27,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get prof => 'यूज़र प्रोफ़ाइल';
 
   @override
-  String get scan => 'स्कैन करें';
+  String get scan => 'स्कैन';
 
   @override
   String get history => 'इतिहास';
@@ -36,7 +36,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get uploadGallery => 'गैलरी से अपलोड करें';
 
   @override
-  String get discarded => 'रद्द कर दिया गया';
+  String get discarded => 'हटा दिया गया';
 
   @override
   String get scanLooking => 'कैमरा सामग्री पर रखें';
@@ -45,11 +45,86 @@ class AppLocalizationsHi extends AppLocalizations {
   String get scanHold => 'स्थिर रखें…';
 
   @override
-  String get scanStable => 'स्थिर फ्रेम मिला';
+  String get scanStable => 'फ्रेम स्थिर है';
 
   @override
-  String get scanCapturing => 'कैप्चर किया जा रहा है…';
+  String get scanCapturing => 'कैप्चर हो रहा है…';
 
   @override
   String get scanCaptured => 'कैप्चर हो गया';
+
+  @override
+  String get welcomeBack => 'वापसी पर स्वागत है';
+
+  @override
+  String get loginToContinue => 'जारी रखने के लिए लॉगिन करें';
+
+  @override
+  String get login => 'लॉगिन';
+
+  @override
+  String get or => 'या';
+
+  @override
+  String get signInWithGoogle => 'Google से साइन इन करें';
+
+  @override
+  String get email => 'ईमेल';
+
+  @override
+  String get password => 'पासवर्ड';
+
+  @override
+  String get camera => 'कैमरा';
+
+  @override
+  String get gallery => 'गैलरी';
+
+  @override
+  String get createAccount => 'खाता बनाएं';
+
+  @override
+  String get signupSubtitle => 'शुरू करने के लिए जानकारी भरें';
+
+  @override
+  String get age => 'उम्र';
+
+  @override
+  String get gender => 'लिंग';
+
+  @override
+  String get genderMale => 'पुरुष';
+
+  @override
+  String get genderFemale => 'महिला';
+
+  @override
+  String get genderNotPreferToSay => 'न बताना पसंद करें';
+
+  @override
+  String get alreadyHaveAccount => 'पहले से खाता है? लॉगिन करें';
+
+  @override
+  String get signupInstead => 'साइन अप करें';
+
+  @override
+  String get editProfile => 'प्रोफ़ाइल अपडेट करें';
+
+  @override
+  String get newPassword => 'पासवर्ड बदलें';
+
+  @override
+  String get saveChanges => 'बदलाव सेव करें';
+
+  @override
+  String get settings => 'सेटिंग्स';
+
+  @override
+  String get language => 'भाषा';
+
+  @override
+  String get system => 'सिस्टम';
+
+  @override
+  String get logout => 'लॉगआउट';
 }

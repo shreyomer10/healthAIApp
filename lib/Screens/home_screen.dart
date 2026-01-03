@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import '../theme.dart';
-import 'scanner_screen.dart';
-import 'profile_screen.dart';
-import 'history_screen.dart';
+import 'package:health_ai/Model/user_model.dart';
+import 'package:health_ai/core/secure_storage.dart';
+import 'package:health_ai/Screens/auth/login_screen.dart';
+import 'package:health_ai/screens/scanner_screen.dart';
+import 'package:health_ai/screens/profile_screen.dart';
+import 'package:health_ai/screens/history_screen.dart';
 import 'package:health_ai/l10n/generated/app_localizations.dart';
+import '../theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,21 +18,58 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
 
+  UserModel? _user;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final user = await SecureStorage.getUser();
+
+    if (!mounted) return;
+
+    if (user == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      return;
+    }
+
+    setState(() {
+      _user = user;
+      _loading = false;
+    });
+  }
+
   void _onSearch(String query) {
     if (query.trim().isEmpty) return;
     debugPrint("SEARCH QUERY => $query");
-    // 🔜 API call later
+    // TODO: API call
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final colors = Theme.of(context).extension<AppColors>()!;
     final t = AppLocalizations.of(context)!;
+    final imageUrl = _user?.profilePicture;
+
+    print('user RESPONSE => ${_user?.profilePicture}');
 
     return Scaffold(
       backgroundColor: colors.background,
 
-      // ✅ PROPER APP BAR
+      // ---------- APP BAR ----------
       appBar: AppBar(
         backgroundColor: colors.background,
         elevation: 0,
@@ -47,7 +87,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Text(
-                "@shrey", // hardcoded for now
+                _user!.email, // 🔥 dynamic user
                 style: TextStyle(
                   color: colors.textPrimary,
                   fontSize: 18,
@@ -67,27 +107,25 @@ class _HomePageState extends State<HomePage> {
                   MaterialPageRoute(builder: (_) => const ProfileScreen()),
                 );
               },
-              child: const CircleAvatar(
+              child: CircleAvatar(
                 radius: 18,
-                backgroundImage: AssetImage('assets/nobg.png'),
-              ),
+                backgroundImage: imageUrl != null
+                    ? NetworkImage(imageUrl)
+                    : const AssetImage('assets/nobg.png') as ImageProvider,
+              )
             ),
           ),
         ],
       ),
 
+      // ---------- BODY ----------
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: [
             const SizedBox(height: 12),
-
-            // 🔍 SEARCH BAR
             _searchBar(colors, t),
-
             const SizedBox(height: 32),
-
-            // ⚡ ACTION BUTTONS
             _actionRow(context, colors, t),
           ],
         ),
@@ -95,7 +133,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ---------------- SEARCH BAR ----------------
+  // ---------- SEARCH BAR ----------
   Widget _searchBar(AppColors colors, AppLocalizations t) {
     return Container(
       height: 48,
@@ -127,9 +165,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ---------------- ACTION BUTTONS ----------------
+  // ---------- ACTION BUTTONS ----------
   Widget _actionRow(
-      BuildContext context, AppColors colors, AppLocalizations t) {
+      BuildContext context,
+      AppColors colors,
+      AppLocalizations t,
+      ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

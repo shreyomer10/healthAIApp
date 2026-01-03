@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme.dart';
+import '../Provider/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -28,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen>
     _scale = Tween<double>(begin: 0.75, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: Curves.easeOutBack, // premium bounce
+        curve: Curves.easeOutBack,
       ),
     );
 
@@ -41,9 +43,16 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
+    // 🔑 AUTH-AWARE NAVIGATION
     Timer(const Duration(milliseconds: 1400), () {
-      if (mounted) {
+      if (!mounted) return;
+
+      final auth = context.read<AuthProvider>();
+
+      if (auth.isLoggedIn) {
         Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
       }
     });
   }
@@ -71,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
                 scale: _scale.value,
                 child: Image.asset(
                   'assets/nobg.png',
-                  width: width, // dominant, responsive
+                  width: width,
                 ),
               ),
             );

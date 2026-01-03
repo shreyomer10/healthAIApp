@@ -3,18 +3,44 @@
   "theme": "थीम बदलें",
   "lang": "अपनी भाषा चुनें",
 
-  "searchHint": "किसी भी उत्पाद को खोजें",
+  "searchHint": "कोई भी प्रोडक्ट खोजें",
   "setting": "सेटिंग्स",
   "prof": "यूज़र प्रोफ़ाइल",
-
-  "scan": "स्कैन करें",
+  "scan": "स्कैन",
   "history": "इतिहास",
   "uploadGallery": "गैलरी से अपलोड करें",
-  "discarded": "रद्द कर दिया गया",
-
+  "discarded": "हटा दिया गया",
   "scanLooking": "कैमरा सामग्री पर रखें",
   "scanHold": "स्थिर रखें…",
-  "scanStable": "स्थिर फ्रेम मिला",
-  "scanCapturing": "कैप्चर किया जा रहा है…",
-  "scanCaptured": "कैप्चर हो गया"
+  "scanStable": "फ्रेम स्थिर है",
+  "scanCapturing": "कैप्चर हो रहा है…",
+  "scanCaptured": "कैप्चर हो गया",
+
+  "welcomeBack": "वापसी पर स्वागत है",
+  "loginToContinue": "जारी रखने के लिए लॉगिन करें",
+  "login": "लॉगिन",
+  "or": "या",
+  "signInWithGoogle": "Google से साइन इन करें",
+  "email": "ईमेल",
+  "password": "पासवर्ड",
+  "camera": "कैमरा",
+  "gallery": "गैलरी",
+
+  "createAccount": "खाता बनाएं",
+  "signupSubtitle": "शुरू करने के लिए जानकारी भरें",
+  "age": "उम्र",
+  "gender": "लिंग",
+  "genderMale": "पुरुष",
+  "genderFemale": "महिला",
+  "genderNotPreferToSay": "न बताना पसंद करें",
+  "alreadyHaveAccount": "पहले से खाता है? लॉगिन करें",
+  "signupInstead": "साइन अप करें",
+  "editProfile": "प्रोफ़ाइल अपडेट करें",
+  "newPassword": "पासवर्ड बदलें",
+  "saveChanges": "बदलाव सेव करें",
+
+  "settings": "सेटिंग्स",
+  "language": "भाषा",
+  "system": "सिस्टम",
+  "logout": "लॉगआउट"
 }
