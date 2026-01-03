@@ -48,7 +48,13 @@
   "theme": "Theme",
   "language": "Language",
   "system": "System",
-  "logout": "Logout"
+  "logout": "Logout",
 
-
+  "confirm": "Yes",
+  "cancel": "Cancel",
+  "exitApp": "Exit the app?",
+  "logoutConfirm": "Logout from this account?",
+  "searchMed": "Search medicines",
+  "searchIngredients": "Search ingredients",
+  "searchProducts": "Search products"
 }

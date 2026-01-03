@@ -1,10 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import '../theme.dart';
 
-class Loader extends StatelessWidget {
-  const Loader({super.key});
+class AppLoader extends StatelessWidget {
+  final double size;
+  final bool fullscreen;
+
+  const AppLoader({
+    super.key,
+    this.size = 74,
+    this.fullscreen = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: CircularProgressIndicator());
+    final colors = Theme.of(context).extension<AppColors>()!;
+
+    final loader = LoadingAnimationWidget.dotsTriangle(
+      color: colors.primarySoft,
+      size: size,
+    );
+
+    if (!fullscreen) {
+      return Center(child: loader);
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(child: loader),
+    );
   }
 }

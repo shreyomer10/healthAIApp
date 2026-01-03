@@ -6,6 +6,8 @@ import '../../theme.dart';
 import '../../widgets/api_error_card.dart';
 import 'package:health_ai/l10n/generated/app_localizations.dart';
 
+import '../../widgets/loader.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -193,9 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (auth.loading)
             Container(
               color: colors.overlay,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: AppLoader()
             ),
         ],
       ),

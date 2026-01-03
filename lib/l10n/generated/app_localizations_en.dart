@@ -127,4 +127,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get logout => 'Logout';
+
+  @override
+  String get confirm => 'Yes';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get exitApp => 'Exit the app?';
+
+  @override
+  String get logoutConfirm => 'Logout from this account?';
+
+  @override
+  String get searchMed => 'Search medicines';
+
+  @override
+  String get searchIngredients => 'Search ingredients';
+
+  @override
+  String get searchProducts => 'Search products';
 }

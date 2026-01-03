@@ -42,5 +42,14 @@
   "settings": "सेटिंग्स",
   "language": "भाषा",
   "system": "सिस्टम",
-  "logout": "लॉगआउट"
+  "logout": "लॉगआउट",
+
+  "confirm": "हाँ",
+  "cancel": "रद्द करें",
+  "exitApp": "ऐप बंद करें?",
+  "logoutConfirm": "क्या आप लॉगआउट करना चाहते हैं?",
+  "searchMed": "दवाइयाँ खोजें",
+  "searchIngredients": "घटक खोजें",
+  "searchProducts": "उत्पाद खोजें"
+
 }

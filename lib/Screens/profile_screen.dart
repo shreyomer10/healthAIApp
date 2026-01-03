@@ -6,6 +6,7 @@ import '../locale/locale_provider.dart';
 import '../theme/theme_provider.dart';
 import '../theme.dart';
 import '../l10n/generated/app_localizations.dart';
+import '../widgets/confirm_action_card.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -67,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const EditProfileScreen(),
+                  builder: (_) =>  EditProfileScreen(),
                 ),
               );
             },
@@ -169,16 +170,23 @@ Widget _logoutCard(
           color: Colors.redAccent,
         ),
       ),
-      onTap: () async {
+      onTap: () {
         final auth = context.read<AuthProvider>();
-        await auth.logout();
 
-        if (!context.mounted) return;
-
-        Navigator.pushNamedAndRemoveUntil(
+        showConfirmCard(
           context,
-          '/login',
-              (_) => false,
+          message: t.logoutConfirm, // ✅ localized
+          onConfirm: () async {
+            await auth.logout();
+
+            if (!context.mounted) return;
+
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/login',
+                  (_) => false,
+            );
+          },
         );
       },
     ),

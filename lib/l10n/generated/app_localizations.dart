@@ -337,6 +337,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Logout'**
   String get logout;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get confirm;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @exitApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit the app?'**
+  String get exitApp;
+
+  /// No description provided for @logoutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout from this account?'**
+  String get logoutConfirm;
+
+  /// No description provided for @searchMed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search medicines'**
+  String get searchMed;
+
+  /// No description provided for @searchIngredients.
+  ///
+  /// In en, this message translates to:
+  /// **'Search ingredients'**
+  String get searchIngredients;
+
+  /// No description provided for @searchProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search products'**
+  String get searchProducts;
 }
 
 class _AppLocalizationsDelegate

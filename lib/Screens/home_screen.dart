@@ -6,7 +6,10 @@ import 'package:health_ai/screens/scanner_screen.dart';
 import 'package:health_ai/screens/profile_screen.dart';
 import 'package:health_ai/screens/history_screen.dart';
 import 'package:health_ai/l10n/generated/app_localizations.dart';
+import 'package:health_ai/widgets/loader.dart';
 import '../theme.dart';
+import '../widgets/AnimatedSearchBox.dart';
+import '../widgets/confirm_action_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,8 +27,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
     _checkSession();
+    _searchController.addListener(() {
+      setState(() {});
+    });
+
   }
+
 
   Future<void> _checkSession() async {
     final user = await SecureStorage.getUser();
@@ -35,7 +44,7 @@ class _HomePageState extends State<HomePage> {
     if (user == null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        MaterialPageRoute(builder: (_) => LoginScreen()),
       );
       return;
     }
@@ -55,111 +64,147 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return AppLoader();
     }
 
     final colors = Theme.of(context).extension<AppColors>()!;
     final t = AppLocalizations.of(context)!;
     final imageUrl = _user?.profilePicture;
 
-    print('user RESPONSE => ${_user?.profilePicture}');
-
-    return Scaffold(
-      backgroundColor: colors.background,
-
-      // ---------- APP BAR ----------
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        showConfirmCard(
+          context,
+          message: t.exitApp, // ✅ localized
+          onConfirm: () {
+            Navigator.of(context).pop(); // exits app
+          },
+        );
+        return false; // block default back
+      },
+      child: Scaffold(
         backgroundColor: colors.background,
-        elevation: 0,
-        titleSpacing: 0,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                t.welcome,
-                style: TextStyle(
-                  color: colors.textSecondary,
-                  fontSize: 12,
+
+        // ---------- APP BAR ----------
+        appBar: AppBar(
+          backgroundColor: colors.background,
+          elevation: 0,
+          titleSpacing: 0,
+          title: Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  t.welcome,
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: 12,
+                  ),
                 ),
-              ),
-              Text(
-                _user!.email, // 🔥 dynamic user
-                style: TextStyle(
-                  color: colors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                Text(
+                  _user!.email,
+                  style: TextStyle(
+                    color: colors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                );
-              },
-              child: CircleAvatar(
-                radius: 18,
-                backgroundImage: imageUrl != null
-                    ? NetworkImage(imageUrl)
-                    : const AssetImage('assets/nobg.png') as ImageProvider,
-              )
+              ],
             ),
           ),
-        ],
-      ),
-
-      // ---------- BODY ----------
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            _searchBar(colors, t),
-            const SizedBox(height: 32),
-            _actionRow(context, colors, t),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => ProfileScreen()),
+                  );
+                },
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundImage: imageUrl != null
+                      ? NetworkImage(imageUrl)
+                      : const AssetImage('assets/nobg.png') as ImageProvider,
+                ),
+              ),
+            ),
           ],
+        ),
+
+        // ---------- BODY ----------
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              _searchBar(colors, t),
+              const SizedBox(height: 32),
+              _actionRow(context, colors, t),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ---------- SEARCH BAR ----------
   Widget _searchBar(AppColors colors, AppLocalizations t) {
-    return Container(
+    return SizedBox(
       height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: colors.overlay,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Row(
+      child: Stack(
+        alignment: Alignment.centerLeft,
         children: [
-          Icon(Icons.search, color: colors.textSecondary),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              style: TextStyle(color: colors.textPrimary),
-              cursorColor: colors.textPrimary,
-              textInputAction: TextInputAction.search,
-              onSubmitted: _onSearch,
-              decoration: InputDecoration(
-                hintText: t.searchHint,
-                hintStyle: TextStyle(color: colors.textSecondary),
-                border: InputBorder.none,
+          TextField(
+            controller: _searchController,
+            style: TextStyle(
+              color: colors.textPrimary,
+              fontSize: 16,
+            ),
+            cursorColor: colors.textPrimary,
+            textInputAction: TextInputAction.search,
+            onSubmitted: _onSearch,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: colors.overlay,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 14,
+                horizontal: 16,
+              ),
+              prefixIcon: Icon(
+                Icons.search,
+                size: 20,
+                color: colors.textSecondary,
+              ),
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 40,
+                minHeight: 40,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
               ),
             ),
           ),
+
+          // ---------- Animated background text ----------
+          if (_searchController.text.isEmpty)
+            Positioned(
+              left: 56,
+              child: IgnorePointer(
+                child: RotatingHintText(
+                  texts: [t.searchMed,
+                    t.searchIngredients,
+                    t.searchProducts,
+                  ],
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -181,7 +226,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const ScannerScreen()),
+              MaterialPageRoute(builder: (_) => ScannerScreen()),
             );
           },
         ),
@@ -193,7 +238,7 @@ class _HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const HistoryScreen()),
+              MaterialPageRoute(builder: (_) =>  HistoryScreen()),
             );
           },
         ),

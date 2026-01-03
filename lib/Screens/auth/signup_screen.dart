@@ -8,6 +8,7 @@ import 'package:health_ai/l10n/generated/app_localizations.dart';
 
 import '../../theme.dart';
 import '../../widgets/api_error_card.dart';
+import '../../widgets/loader.dart';
 enum Gender {
   male,
   female,
@@ -317,10 +318,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
           if (auth.loading)
             Container(
-              color: colors.overlay,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+                color: colors.overlay,
+                child: AppLoader()
             ),
         ],
       ),

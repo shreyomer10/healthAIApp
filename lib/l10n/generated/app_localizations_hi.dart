@@ -127,4 +127,25 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get logout => 'लॉगआउट';
+
+  @override
+  String get confirm => 'हाँ';
+
+  @override
+  String get cancel => 'रद्द करें';
+
+  @override
+  String get exitApp => 'ऐप बंद करें?';
+
+  @override
+  String get logoutConfirm => 'क्या आप लॉगआउट करना चाहते हैं?';
+
+  @override
+  String get searchMed => 'दवाइयाँ खोजें';
+
+  @override
+  String get searchIngredients => 'घटक खोजें';
+
+  @override
+  String get searchProducts => 'उत्पाद खोजें';
 }

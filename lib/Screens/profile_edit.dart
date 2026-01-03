@@ -7,6 +7,7 @@ import '../Provider/auth_provider.dart';
 import '../theme.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../widgets/api_error_card.dart';
+import '../widgets/loader.dart';
 import 'auth/signup_screen.dart'; // for Gender enum
 
 class EditProfileScreen extends StatefulWidget {
@@ -72,143 +73,127 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         iconTheme: IconThemeData(color: colors.textPrimary),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            // -------- PROFILE PHOTO --------
-            Center(
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: colors.surface,
-                    backgroundImage: newProfileImage != null
-                        ? FileImage(newProfileImage!)
-                        : (user.profilePicture != null
-                        ? NetworkImage(user.profilePicture!)
-                        : null) as ImageProvider?,
-                    child: newProfileImage == null &&
-                        user.profilePicture == null
-                        ? Icon(Icons.person,
-                        size: 40, color: colors.textSecondary)
-                        : null,
+      body: Stack(
+        children: [
+          Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                // -------- PROFILE PHOTO --------
+                Center(
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: colors.surface,
+                        backgroundImage: newProfileImage != null
+                            ? FileImage(newProfileImage!)
+                            : (user.profilePicture != null
+                            ? NetworkImage(user.profilePicture!)
+                            : null) as ImageProvider?,
+                        child: newProfileImage == null &&
+                            user.profilePicture == null
+                            ? Icon(Icons.person,
+                            size: 40, color: colors.textSecondary)
+                            : null,
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.edit, color: colors.primary),
+                        onPressed: () async {
+                          final picked = await ImagePicker()
+                              .pickImage(source: ImageSource.gallery);
+                          if (picked != null) {
+                            setState(() {
+                              newProfileImage = File(picked.path);
+                            });
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                  IconButton(
-                    icon: Icon(Icons.edit, color: colors.primary),
-                    onPressed: () async {
-                      final picked = await ImagePicker()
-                          .pickImage(source: ImageSource.gallery);
-                      if (picked != null) {
-                        setState(() {
-                          newProfileImage = File(picked.path);
-                        });
-                      }
+                ),
+
+                const SizedBox(height: 32),
+
+                TextFormField(
+                  initialValue: user.email,
+                  enabled: false,
+                  decoration: InputDecoration(labelText: t.email),
+                ),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: ageCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(labelText: t.age),
+                ),
+
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<Gender>(
+                  value: gender,
+                  decoration: InputDecoration(labelText: t.gender),
+                  items: const [
+                    DropdownMenuItem(value: Gender.male, child: Text('Male')),
+                    DropdownMenuItem(value: Gender.female, child: Text('Female')),
+                    DropdownMenuItem(
+                        value: Gender.notSpecified,
+                        child: Text('Prefer not to say')),
+                  ],
+                  onChanged: auth.loading ? null : (v) => setState(() => gender = v),
+                ),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: passCtrl,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: t.newPassword),
+                ),
+
+                const SizedBox(height: 32),
+
+                SizedBox(
+                  height: 48,
+                  child: FilledButton(
+                    onPressed: auth.loading
+                        ? null
+                        : () async {
+                      final success = await auth.updateUser(
+                        userId: user.id,
+                        age: ageCtrl.text.isNotEmpty
+                            ? int.parse(ageCtrl.text)
+                            : null,
+                        gender: gender?.name,
+                        password:
+                        passCtrl.text.isNotEmpty ? passCtrl.text : null,
+                        profilePicture: newProfileImage,
+                      );
+
+                      if (!mounted) return;
+                      Navigator.pop(context);
                     },
+                    child: Text(t.saveChanges),
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // -------- EMAIL (READ ONLY) --------
-            TextFormField(
-              initialValue: user.email,
-              enabled: false,
-              style: TextStyle(color: colors.textSecondary),
-              decoration: InputDecoration(
-                labelText: t.email,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // -------- AGE --------
-            TextFormField(
-              controller: ageCtrl,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: colors.textPrimary),
-              decoration: InputDecoration(
-                labelText: t.age,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // -------- GENDER (SAFE, NO CRASH) --------
-            DropdownButtonFormField<Gender>(
-              value: gender,
-              decoration: InputDecoration(
-                labelText: t.gender,
-              ),
-              dropdownColor: colors.surface,
-              items: [
-                DropdownMenuItem(
-                  value: Gender.male,
-                  child: Text(t.genderMale),
-                ),
-                DropdownMenuItem(
-                  value: Gender.female,
-                  child: Text(t.genderFemale),
-                ),
-                DropdownMenuItem(
-                  value: Gender.notSpecified,
-                  child: Text(t.genderNotPreferToSay),
                 ),
               ],
-              onChanged: (v) => setState(() => gender = v),
             ),
+          ),
 
-            const SizedBox(height: 16),
-
-            // -------- PASSWORD --------
-            TextFormField(
-              controller: passCtrl,
-              obscureText: true,
-              style: TextStyle(color: colors.textPrimary),
-              decoration: InputDecoration(
-                labelText: t.newPassword,
+          // ---------- LOADING OVERLAY ----------
+          if (auth.loading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const AppLoader(),
               ),
             ),
-
-            const SizedBox(height: 32),
-
-            // -------- SAVE --------
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: colors.actionButton,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: auth.loading
-                    ? null
-                    : () async {
-                  await auth.updateUser(
-                    userId: user.id,
-                    age: ageCtrl.text.isNotEmpty
-                        ? int.parse(ageCtrl.text)
-                        : null,
-                    gender: gender?.name, // ALWAYS lowercase
-                    password: passCtrl.text.isNotEmpty
-                        ? passCtrl.text
-                        : null,
-                    profilePicture: newProfileImage,
-                  );
-
-                  if (!mounted) return;
-                  Navigator.pop(context);
-                },
-                child: Text(t.saveChanges),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
+
     );
   }
 }
