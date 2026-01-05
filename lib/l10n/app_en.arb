@@ -56,5 +56,15 @@
   "logoutConfirm": "Logout from this account?",
   "searchMed": "Search medicines",
   "searchIngredients": "Search ingredients",
-  "searchProducts": "Search products"
+  "searchProducts": "Search products",
+  "history": "History",
+  "noHistory": "No scans yet",
+  "noTextDetected": "No text detected",
+  "personalization":"Personalize Your App",
+  "addContext":"Provide More Context",
+  "contextHint":"I Have fever.",
+  "noScansFound":"No Scans Yet",
+  "scanId":"Scan Id",
+  "continueWithGoogle":"Continue With Google",
+  "orContinueWith":"Continue With"
 }

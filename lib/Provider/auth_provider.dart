@@ -1,5 +1,8 @@
+import 'dart:developer' as AppLogger;
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../Model/scan_model.dart';
+import '../Model/upload_response_model.dart';
 import '../core/api_exception.dart';
 import '../core/secure_storage.dart';
 import '../repository/auth_repository.dart';
@@ -16,6 +19,9 @@ class AuthProvider extends ChangeNotifier {
   String? message;
   AuthProvider(this.repo);
 
+  List<ScanModel> scans = [];
+
+  UploadResponse? lastUpload;
   Future<void> checkLogin() async {
     final token = await SecureStorage.getToken();
     final storedUser = await SecureStorage.getUser();
@@ -26,6 +32,10 @@ class AuthProvider extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+
+
+
 
   Future<void> login(String email, String password) async {
     loading = true;
@@ -185,5 +195,171 @@ class AuthProvider extends ChangeNotifier {
     error = null;
     notifyListeners();
   }
+
+  Future<void> loginWithGoogle() async {
+    loading = true;
+    error = null;
+    message = null;
+    notifyListeners();
+
+    try {
+      // TODO: integrate google_sign_in + backend token exchange
+      // final token = await repo.googleLogin();
+      // await SecureStorage.saveToken(token);
+      // user = await repo.getProfile();
+      // isLoggedIn = true;
+
+      throw UnimplementedError('Google login not wired yet');
+    } catch (e) {
+      error = e.toString();
+      message = error;
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  // ---------- LOAD PROFILE ----------
+  Future<void> loadProfile() async {
+    loading = true;
+    error = null;
+    message = null;
+    statusCode = null;
+    scans=[];
+    notifyListeners();
+
+    try {
+      final result = await repo.getUserProfile();
+    //  user = result.$1;
+      scans = result;
+
+      print('PROVIDER SCANS COUNT => ${scans.length}');
+
+      await SecureStorage.saveUser(user!);
+
+      statusCode = 200;
+      message = 'Profile loaded';
+    } catch (e) {
+      print('LOAD PROFILE ERROR => $e');
+
+      if (e is ApiException) {
+        error = e.message;
+        statusCode = e.statusCode;
+        message = e.message;
+      } else {
+        error = 'Unexpected error';
+        statusCode = 500;
+        message = error;
+      }
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<ScanDetailModel?> loadChat(String chatId) async {
+    loading = true;
+    message = null;
+    statusCode = null;
+    notifyListeners();
+
+    try {
+      final scan = await repo.getChat(chatId);
+      return scan;
+    } catch (e) {
+      if (e is ApiException) {
+        statusCode = e.statusCode;
+        message = e.message;
+        error = e.message;
+      } else {
+        statusCode = 500;
+        message = 'Unexpected error';
+        error = message;
+      }
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> upload({
+    File? image,
+    String? text,
+    String? language,
+  }) async {
+    loading = true;
+    error = null;
+    message = null;
+    statusCode = null;
+    notifyListeners();
+
+    try {
+      lastUpload = await repo.uploadScan(image: image, text: text,language: language);
+
+      print('PROVIDER OUTPUT => ${lastUpload?.output}');
+
+      statusCode = 201;
+      message = 'Scan Completed';
+    } catch (e) {
+      if (e is ApiException) {
+        error = e.message;
+        statusCode = e.statusCode;
+        message = e.message;
+      } else {
+        error = 'Unexpected error';
+        print(e);
+
+        statusCode = 500;
+        message = error;
+      }
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> refineScan({
+    required String scanId,
+    required String text,
+  }) async {
+    loading=true;
+    error = null;
+    message = null;
+    statusCode = null;
+    notifyListeners();
+
+    try {
+      final res = await repo.refineScan(
+        scanId: scanId,
+        text: text,
+      );
+
+      // 🔥 overwrite only output
+      lastUpload = UploadResponse(
+        scanId: scanId,
+        output: res.output,
+        filename: lastUpload?.filename,
+        imageUrl: lastUpload?.imageUrl,
+      );
+      statusCode = 200;
+      message = 'Refining Completed';
+    } catch (e) {
+      if (e is ApiException) {
+        error = e.message;
+        statusCode = e.statusCode;
+        message = e.message;
+      } else {
+        error = 'Unexpected error';
+        print(e);
+        statusCode = 500;
+        message = error;
+      }
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+
 
 }

@@ -173,6 +173,49 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(t.login),
                       ),
                     ),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: colors.border)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            t.orContinueWith,
+                            style: TextStyle(color: colors.textSecondary),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: colors.border)),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        icon: Image.asset(
+                          'assets/google.png', // add this asset
+                          height: 20,
+                        ),
+                        label: Text(
+                          t.continueWithGoogle,
+                          style: TextStyle(color: colors.textPrimary),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: colors.border),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: auth.loading
+                            ? null
+                            : () {
+                          auth.loginWithGoogle();
+                        },
+                      ),
+                    ),
 
                     const SizedBox(height: 16),
 

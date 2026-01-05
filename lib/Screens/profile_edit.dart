@@ -22,7 +22,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   late TextEditingController ageCtrl;
   final passCtrl = TextEditingController();
-
+  final aiPersonal = TextEditingController();
   File? newProfileImage;
   Gender? gender;
 
@@ -38,6 +38,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     ageCtrl.dispose();
     passCtrl.dispose();
+    aiPersonal.dispose();
     super.dispose();
   }
 
@@ -152,6 +153,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   controller: passCtrl,
                   obscureText: true,
                   decoration: InputDecoration(labelText: t.newPassword),
+                ),
+                TextFormField(
+                  controller: aiPersonal,
+                  obscureText: true,
+                  decoration: InputDecoration(labelText: t.personalization),
                 ),
 
                 const SizedBox(height: 32),

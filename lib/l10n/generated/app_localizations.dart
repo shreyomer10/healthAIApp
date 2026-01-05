@@ -6,7 +6,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
 import 'app_localizations_hi.dart';
+import 'app_localizations_ta.dart';
+import 'app_localizations_te.dart';
 
 // ignore_for_file: type=lint
 
@@ -95,7 +99,11 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('es'),
+    Locale('fr'),
     Locale('hi'),
+    Locale('ta'),
+    Locale('te'),
   ];
 
   /// No description provided for @welcome.
@@ -379,6 +387,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search products'**
   String get searchProducts;
+
+  /// No description provided for @noHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No scans yet'**
+  String get noHistory;
+
+  /// No description provided for @noTextDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'No text detected'**
+  String get noTextDetected;
+
+  /// No description provided for @personalization.
+  ///
+  /// In en, this message translates to:
+  /// **'Personalize Your App'**
+  String get personalization;
+
+  /// No description provided for @addContext.
+  ///
+  /// In en, this message translates to:
+  /// **'Provide More Context'**
+  String get addContext;
+
+  /// No description provided for @contextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'I Have fever.'**
+  String get contextHint;
+
+  /// No description provided for @noScansFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No Scans Yet'**
+  String get noScansFound;
+
+  /// No description provided for @scanId.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Id'**
+  String get scanId;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue With Google'**
+  String get continueWithGoogle;
+
+  /// No description provided for @orContinueWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue With'**
+  String get orContinueWith;
 }
 
 class _AppLocalizationsDelegate
@@ -391,8 +453,14 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'hi'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+    'en',
+    'es',
+    'fr',
+    'hi',
+    'ta',
+    'te',
+  ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -403,8 +471,16 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
     case 'hi':
       return AppLocalizationsHi();
+    case 'ta':
+      return AppLocalizationsTa();
+    case 'te':
+      return AppLocalizationsTe();
   }
 
   throw FlutterError(

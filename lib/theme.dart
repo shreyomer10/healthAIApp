@@ -21,6 +21,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color border;
   final Color divider;
   final Color actionButton;
+  final Color shadow;
 
   // Status
   final Color error;
@@ -47,6 +48,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.success,
     required this.warning,
     required this.scannerCorner,
+    required this.shadow
   });
 
   @override
@@ -67,6 +69,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? success,
     Color? warning,
     Color? scannerCorner,
+    Color? shadow,
   }) {
     return AppColors(
       background: background ?? this.background,
@@ -85,6 +88,8 @@ class AppColors extends ThemeExtension<AppColors> {
       success: success ?? this.success,
       warning: warning ?? this.warning,
       scannerCorner: scannerCorner ?? this.scannerCorner,
+      shadow: shadow ?? this.shadow,
+
     );
   }
 
@@ -109,6 +114,8 @@ class AppColors extends ThemeExtension<AppColors> {
       success: Color.lerp(success, other.success, t)!,
       warning: Color.lerp(warning, other.warning, t)!,
       scannerCorner: Color.lerp(scannerCorner, other.scannerCorner, t)!,
+      shadow: Color.lerp(shadow, other.shadow, t)!,
+
     );
   }
 }

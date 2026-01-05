@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import '../Model/scan_model.dart';
+import '../Model/upload_response_model.dart';
 import '../Model/user_model.dart';
 import '../core/dio_error_handler.dart';
 
@@ -112,4 +114,69 @@ class AuthRepository {
     }
 
   }
+  // ---------- GET USER PROFILE ----------
+  Future<List<ScanModel>> getUserProfile() async {
+    final res = await dio.get('/get-user-profile');
+
+    final rawScans = res.data['scans'] as List;
+
+    final scans = <ScanModel>[];
+
+    for (final e in rawScans) {
+      try {
+        scans.add(ScanModel.fromJson(e));
+      } catch (err) {
+        // skip broken scan, don't kill the whole list
+        //debugPrint('SKIPPED BAD SCAN => $err');
+      }
+    }
+
+    return scans;
+  }
+
+  // ---------- GET CHAT ----------
+  Future<ScanDetailModel> getChat(String chatId) async {
+    final res = await dio.get(
+      '/get-chat',
+      queryParameters: {'chat_id': chatId},
+    );
+
+    return ScanDetailModel.fromJson(res.data);
+  }
+
+
+  // ---------- UPLOAD IMAGE / TEXT ----------
+  Future<UploadResponse> uploadScan({
+    File? image,
+    String? text,
+    String? language,
+  }) async {
+    final formData = FormData.fromMap({
+      if (image != null)
+        'file': await MultipartFile.fromFile(image.path),
+      if (text != null) 'text': text,
+      if (language!=null)'language':language
+    });
+
+    final res = await dio.post('/upload-image', data: formData);
+    return UploadResponse.fromJson(res.data);
+  }
+  Future<UploadResponse> refineScan({
+    required String scanId,
+    required String text,
+  }) async {
+    final res = await dio.post(
+      '/refine-scan',
+      data: {
+        'scan_id': scanId,
+        'text': text,
+      },
+    );
+
+    return UploadResponse(
+      scanId: scanId,
+      output: res.data['output'],
+    );
+  }
+
 }

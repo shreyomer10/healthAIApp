@@ -18,13 +18,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get lang => 'अपनी भाषा चुनें';
 
   @override
-  String get searchHint => 'कोई भी प्रोडक्ट खोजें';
+  String get searchHint => 'कोई भी उत्पाद खोजें';
 
   @override
   String get setting => 'सेटिंग्स';
 
   @override
-  String get prof => 'यूज़र प्रोफ़ाइल';
+  String get prof => 'उपयोगकर्ता प्रोफ़ाइल';
 
   @override
   String get scan => 'स्कैन';
@@ -36,10 +36,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get uploadGallery => 'गैलरी से अपलोड करें';
 
   @override
-  String get discarded => 'हटा दिया गया';
+  String get discarded => 'हटाया गया';
 
   @override
-  String get scanLooking => 'कैमरा सामग्री पर रखें';
+  String get scanLooking => 'कैमरे को सामग्री पर रखें';
 
   @override
   String get scanHold => 'स्थिर रखें…';
@@ -84,7 +84,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get createAccount => 'खाता बनाएं';
 
   @override
-  String get signupSubtitle => 'शुरू करने के लिए जानकारी भरें';
+  String get signupSubtitle => 'शुरू करने के लिए विवरण भरें';
 
   @override
   String get age => 'उम्र';
@@ -99,7 +99,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get genderFemale => 'महिला';
 
   @override
-  String get genderNotPreferToSay => 'न बताना पसंद करें';
+  String get genderNotPreferToSay => 'कहना नहीं चाहते';
 
   @override
   String get alreadyHaveAccount => 'पहले से खाता है? लॉगिन करें';
@@ -114,7 +114,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get newPassword => 'पासवर्ड बदलें';
 
   @override
-  String get saveChanges => 'बदलाव सेव करें';
+  String get saveChanges => 'परिवर्तन सहेजें';
 
   @override
   String get settings => 'सेटिंग्स';
@@ -135,17 +135,44 @@ class AppLocalizationsHi extends AppLocalizations {
   String get cancel => 'रद्द करें';
 
   @override
-  String get exitApp => 'ऐप बंद करें?';
+  String get exitApp => 'ऐप से बाहर निकलें?';
 
   @override
-  String get logoutConfirm => 'क्या आप लॉगआउट करना चाहते हैं?';
+  String get logoutConfirm => 'इस खाते से लॉगआउट करें?';
 
   @override
   String get searchMed => 'दवाइयाँ खोजें';
 
   @override
-  String get searchIngredients => 'घटक खोजें';
+  String get searchIngredients => 'सामग्री खोजें';
 
   @override
   String get searchProducts => 'उत्पाद खोजें';
+
+  @override
+  String get noHistory => 'अभी तक कोई स्कैन नहीं';
+
+  @override
+  String get noTextDetected => 'कोई टेक्स्ट नहीं मिला';
+
+  @override
+  String get personalization => 'अपने ऐप को अनुकूलित करें';
+
+  @override
+  String get addContext => 'अधिक जानकारी दें';
+
+  @override
+  String get contextHint => 'मुझे बुखार है।';
+
+  @override
+  String get noScansFound => 'कोई स्कैन नहीं मिला';
+
+  @override
+  String get scanId => 'स्कैन आईडी';
+
+  @override
+  String get continueWithGoogle => 'Google के साथ जारी रखें';
+
+  @override
+  String get orContinueWith => 'इसके साथ जारी रखें';
 }

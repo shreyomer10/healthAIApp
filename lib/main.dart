@@ -107,7 +107,7 @@ ThemeData _darkTheme() {
 
         border: Color(0xFF1F2A2E),
         divider: Color(0xFF263238),
-
+          shadow:Color(0xFF263238),
         actionButton: Color(0xFF3FA7A0),
 
         error: Color(0xFFE57373),
@@ -143,6 +143,7 @@ ThemeData _lightTheme() {
         divider: Color(0xFFD0D8DB),
 
         actionButton: Color(0xFF2F8F88),
+        shadow:Color(0xFF263238),
 
         error: Color(0xFFD32F2F),
         success: Color(0xFF388E3C),

@@ -7,6 +7,7 @@ import 'package:health_ai/Screens/profile_screen.dart';
 import 'package:health_ai/Screens/history_screen.dart';
 import 'package:health_ai/l10n/generated/app_localizations.dart';
 import 'package:health_ai/widgets/loader.dart';
+
 import '../theme.dart';
 import '../widgets/AnimatedSearchBox.dart';
 import '../widgets/confirm_action_card.dart';
@@ -27,14 +28,11 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-
     _checkSession();
     _searchController.addListener(() {
       setState(() {});
     });
-
   }
-
 
   Future<void> _checkSession() async {
     final user = await SecureStorage.getUser();
@@ -44,7 +42,7 @@ class _HomePageState extends State<HomePage> {
     if (user == null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => LoginScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
       return;
     }
@@ -58,13 +56,12 @@ class _HomePageState extends State<HomePage> {
   void _onSearch(String query) {
     if (query.trim().isEmpty) return;
     debugPrint("SEARCH QUERY => $query");
-    // TODO: API call
   }
 
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return AppLoader();
+      return const AppLoader();
     }
 
     final colors = Theme.of(context).extension<AppColors>()!;
@@ -75,12 +72,12 @@ class _HomePageState extends State<HomePage> {
       onWillPop: () async {
         showConfirmCard(
           context,
-          message: t.exitApp, // ✅ localized
+          message: t.exitApp,
           onConfirm: () {
-            Navigator.of(context).pop(); // exits app
+            Navigator.of(context).pop();
           },
         );
-        return false; // block default back
+        return false;
       },
       child: Scaffold(
         backgroundColor: colors.background,
@@ -120,7 +117,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => ProfileScreen()),
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()),
                   );
                 },
                 child: CircleAvatar(
@@ -136,13 +133,12 @@ class _HomePageState extends State<HomePage> {
 
         // ---------- BODY ----------
         body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             children: [
-              const SizedBox(height: 12),
               _searchBar(colors, t),
               const SizedBox(height: 32),
-              _actionRow(context, colors, t),
+              _actionColumn(context, colors, t),
             ],
           ),
         ),
@@ -150,6 +146,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // ---------- SEARCH BAR ----------
   Widget _searchBar(AppColors colors, AppLocalizations t) {
     return SizedBox(
       height: 48,
@@ -177,24 +174,19 @@ class _HomePageState extends State<HomePage> {
                 size: 20,
                 color: colors.textSecondary,
               ),
-              prefixIconConstraints: const BoxConstraints(
-                minWidth: 40,
-                minHeight: 40,
-              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: BorderSide.none,
               ),
             ),
           ),
-
-          // ---------- Animated background text ----------
           if (_searchController.text.isEmpty)
             Positioned(
               left: 56,
               child: IgnorePointer(
                 child: RotatingHintText(
-                  texts: [t.searchMed,
+                  texts: [
+                    t.searchMed,
                     t.searchIngredients,
                     t.searchProducts,
                   ],
@@ -210,35 +202,34 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ---------- ACTION BUTTONS ----------
-  Widget _actionRow(
+  // ---------- BIG VERTICAL ACTION BUTTONS ----------
+  Widget _actionColumn(
       BuildContext context,
       AppColors colors,
       AppLocalizations t,
       ) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        _actionButton(
+        _bigActionButton(
           icon: Icons.qr_code_scanner,
           label: t.scan,
           colors: colors,
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => ScannerScreen()),
+              MaterialPageRoute(builder: (_) => const ScannerScreen()),
             );
           },
         ),
-        const SizedBox(width: 24),
-        _actionButton(
+        const SizedBox(height: 20),
+        _bigActionButton(
           icon: Icons.history,
           label: t.history,
           colors: colors,
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) =>  HistoryScreen()),
+              MaterialPageRoute(builder: (_) => const ScanListScreen()),
             );
           },
         ),
@@ -246,32 +237,51 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _actionButton({
+  Widget _bigActionButton({
     required IconData icon,
     required String label,
     required AppColors colors,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: colors.actionButton,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(icon, color: colors.textPrimary, size: 32),
+    return Center(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 260, // 👈 reduced width (tweak: 240–280)
+          height: 110,
+          decoration: BoxDecoration(
+            color: colors.actionButton,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow,
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(color: colors.textPrimary),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 40,
+                color: colors.textPrimary,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: colors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
+
 }

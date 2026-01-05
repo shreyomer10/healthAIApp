@@ -148,4 +148,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchProducts => 'Search products';
+
+  @override
+  String get noHistory => 'No scans yet';
+
+  @override
+  String get noTextDetected => 'No text detected';
+
+  @override
+  String get personalization => 'Personalize Your App';
+
+  @override
+  String get addContext => 'Provide More Context';
+
+  @override
+  String get contextHint => 'I Have fever.';
+
+  @override
+  String get noScansFound => 'No Scans Yet';
+
+  @override
+  String get scanId => 'Scan Id';
+
+  @override
+  String get continueWithGoogle => 'Continue With Google';
+
+  @override
+  String get orContinueWith => 'Continue With';
 }

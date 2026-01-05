@@ -79,6 +79,7 @@ flutter:
     - assets/avatars/wolf.png
     - assets/avatars/woman.png
     - assets/avatars/woman2.png
+    - assets/google.png
 
 
 flutter_icons:
