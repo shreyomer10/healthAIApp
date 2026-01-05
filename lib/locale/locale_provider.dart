@@ -12,6 +12,8 @@ class LocaleProvider extends ChangeNotifier {
     final code = prefs.getString(_key);
     if (code != null) {
       _locale = Locale(code);
+      notifyListeners(); // 🔥 REQUIRED
+
     }
   }
 

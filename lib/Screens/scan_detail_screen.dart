@@ -53,7 +53,7 @@ class _ScanDetailScreenState extends State<ScanDetailScreen> {
         title: const Text('Scan Details'),
       ),
       body: loading
-          ? AppLoader()
+          ? const AppLoader()
           : detail == null
           ? const Center(child: Text('Failed to load scan'))
           : _body(colors),
@@ -69,15 +69,17 @@ class _ScanDetailScreenState extends State<ScanDetailScreen> {
         if (s.imageUrl != null)
           ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.network(s.imageUrl!, fit: BoxFit.cover),
+            child: Image.network(
+              s.imageUrl!,
+              fit: BoxFit.cover,
+            ),
           ),
 
         const SizedBox(height: 16),
 
-      //  _tile('Scan ID', s.id, colors),
         _tile('Filename', s.filename ?? '-', colors),
         _tile('Language', s.language ?? '-', colors),
-        _tile('Created', s.createdAt.toString(), colors),
+        _tile('Created', s.createdAt.toLocal().toString(), colors),
 
         const SizedBox(height: 16),
 
@@ -86,22 +88,24 @@ class _ScanDetailScreenState extends State<ScanDetailScreen> {
 
         const SizedBox(height: 24),
 
-        _output('Intent', s.output?['intent'], colors),
-        _output('Inference', s.output?['inference'], colors),
-        _output('Guidance', s.output?['guidance'], colors),
+        _intentSection(s.intent, colors),
+        _confidenceSection('Inference', s.inference, colors),
+        _confidenceSection('Guidance', s.guidance, colors),
       ],
     );
   }
 
-  Widget _tile(String l, String v, AppColors c) {
+  // ---------- BASIC INFO TILE ----------
+  Widget _tile(String label, String value, AppColors c) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 90,
             child: Text(
-              l,
+              label,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: c.textSecondary,
@@ -109,24 +113,32 @@ class _ScanDetailScreenState extends State<ScanDetailScreen> {
             ),
           ),
           Expanded(
-            child: Text(v, style: TextStyle(color: c.textPrimary)),
+            child: Text(
+              value,
+              style: TextStyle(color: c.textPrimary),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _section(String t, String? v, AppColors c) {
-    if (v == null || v.trim().isEmpty) return const SizedBox();
+  // ---------- TEXT SECTION ----------
+  Widget _section(String title, String? value, AppColors c) {
+    if (value == null || value.trim().isEmpty) {
+      return const SizedBox();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(t,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: c.textSecondary,
-            )),
+        Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: c.textSecondary,
+          ),
+        ),
         const SizedBox(height: 6),
         Container(
           padding: const EdgeInsets.all(12),
@@ -134,27 +146,46 @@ class _ScanDetailScreenState extends State<ScanDetailScreen> {
             color: c.overlay,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(v, style: TextStyle(color: c.textPrimary)),
+          child: Text(
+            value,
+            style: TextStyle(color: c.textPrimary),
+          ),
         ),
         const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget _output(String title, Map<String, dynamic>? data, AppColors c) {
-    if (data == null) return const SizedBox();
+  // ---------- INTENT ----------
+  Widget _intentSection(IntentModel? intent, AppColors c) {
+    if (intent == null) return const SizedBox();
 
-    final text =
-        data['op_inference'] ?? data['op_guidance'] ?? data['label'] ?? '';
+    final isRisk = intent.label.toLowerCase() == 'health_risk';
+    final color = isRisk ? Colors.red : Colors.green;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: c.textPrimary,
-            )),
+        Row(
+          children: [
+            Text(
+              'Intent',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: c.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Chip(
+              label: Text(intent.label.toUpperCase()),
+              backgroundColor: color.withOpacity(0.15),
+              labelStyle: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 6),
         Container(
           padding: const EdgeInsets.all(12),
@@ -162,7 +193,63 @@ class _ScanDetailScreenState extends State<ScanDetailScreen> {
             color: c.overlay,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(text, style: TextStyle(color: c.textPrimary)),
+          child: Text(
+            intent.reason,
+            style: TextStyle(color: c.textPrimary),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  // ---------- INFERENCE / GUIDANCE ----------
+  Widget _confidenceSection(
+      String title,
+      ConfidenceBlock? block,
+      AppColors c,
+      ) {
+    if (block == null) return const SizedBox();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: c.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: c.overlay,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                block.text,
+                style: TextStyle(color: c.textPrimary),
+              ),
+              const SizedBox(height: 10),
+              LinearProgressIndicator(
+                value: block.confidence,
+                minHeight: 6,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Confidence: ${(block.confidence * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: c.textSecondary,
+                ),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 16),
       ],
