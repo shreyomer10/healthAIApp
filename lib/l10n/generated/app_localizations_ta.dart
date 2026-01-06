@@ -18,6 +18,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get lang => 'உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்';
 
   @override
+  String get name => 'பெயர்';
+
+  @override
   String get searchHint => 'எந்த தயாரிப்பையும் தேடுங்கள்';
 
   @override

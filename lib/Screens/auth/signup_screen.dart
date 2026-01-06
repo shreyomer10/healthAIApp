@@ -23,6 +23,7 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final name = TextEditingController();
 
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
@@ -221,6 +222,18 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 16),
 
                   TextFormField(
+                    controller: name,
+                    validator: Validators.name,
+                    style: TextStyle(color: colors.textPrimary),
+                    decoration: InputDecoration(
+                      labelText: t.name,
+                      labelStyle:
+                      TextStyle(color: colors.textSecondary),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+                  TextFormField(
                     controller: passCtrl,
                     obscureText: _obscurePassword,
                     validator: Validators.password,
@@ -295,6 +308,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             .validate()) return;
 
                         await auth.register(
+                          name:name.text.trim(),
                           email: emailCtrl.text.trim(),
                           password:
                           passCtrl.text.trim(),

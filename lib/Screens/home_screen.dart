@@ -100,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 Text(
-                  _user!.email,
+                  _user!.name,
                   style: TextStyle(
                     color: colors.textPrimary,
                     fontSize: 18,

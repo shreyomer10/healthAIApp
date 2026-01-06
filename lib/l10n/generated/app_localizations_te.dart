@@ -18,6 +18,9 @@ class AppLocalizationsTe extends AppLocalizations {
   String get lang => 'మీ భాషను ఎంచుకోండి';
 
   @override
+  String get name => 'పేరు';
+
+  @override
   String get searchHint => 'ఏ ఉత్పత్తినైనా వెతకండి';
 
   @override

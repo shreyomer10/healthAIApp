@@ -2,7 +2,7 @@
   "welcome": "Bienvenido",
   "theme": "Cambiar tema",
   "lang": "Selecciona tu idioma",
-
+"name":"Name",
   "searchHint": "Buscar cualquier producto",
   "setting": "Configuración",
   "prof": "Perfil de usuario",

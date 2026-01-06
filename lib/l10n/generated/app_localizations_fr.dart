@@ -18,6 +18,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get lang => 'Choisissez votre langue';
 
   @override
+  String get name => 'Name';
+
+  @override
   String get searchHint => 'Rechercher un produit';
 
   @override

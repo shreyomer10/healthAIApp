@@ -1,6 +1,7 @@
 import 'dart:developer' as AppLogger;
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../Model/scan_model.dart';
 import '../Model/upload_response_model.dart';
 import '../core/api_exception.dart';
@@ -71,6 +72,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> register({
+    required String name,
     required String email,
     required String password,
     String? gender,
@@ -85,6 +87,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       await repo.register(
+        name:name,
         email: email,
         password: password,
         gender: gender,
@@ -196,6 +199,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email'],
+  );
+
   Future<void> loginWithGoogle() async {
     loading = true;
     error = null;
@@ -203,13 +210,34 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: integrate google_sign_in + backend token exchange
-      // final token = await repo.googleLogin();
-      // await SecureStorage.saveToken(token);
-      // user = await repo.getProfile();
-      // isLoggedIn = true;
+      // Force account picker every time
+      await _googleSignIn.signOut();
 
-      throw UnimplementedError('Google login not wired yet');
+      final GoogleSignInAccount? account =
+      await _googleSignIn.signIn();
+
+      if (account == null) {
+        throw Exception("Login cancelled");
+      }
+
+      // THIS is all you’re getting
+      final email = account.email;
+      final name = account.displayName;
+      final photo = account.photoUrl;
+
+      // Fake-login locally
+      user = UserModel(
+        id:"id",
+        email: email,
+        name: name ?? '',
+        profilePicture: photo,
+      );
+
+      isLoggedIn = true;
+
+      // Optional: persist locally
+      await SecureStorage.saveUser(user!);
+
     } catch (e) {
       error = e.toString();
       message = error;

@@ -124,6 +124,12 @@ abstract class AppLocalizations {
   /// **'Select Your Language'**
   String get lang;
 
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:

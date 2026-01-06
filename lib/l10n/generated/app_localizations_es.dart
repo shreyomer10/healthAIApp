@@ -18,6 +18,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lang => 'Selecciona tu idioma';
 
   @override
+  String get name => 'Name';
+
+  @override
   String get searchHint => 'Buscar cualquier producto';
 
   @override

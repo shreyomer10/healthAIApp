@@ -11,6 +11,7 @@ class AuthRepository {
 
   // ---------- REGISTER ----------
   Future<void> register({
+    required String name,
     required String email,
     required String password,
     String? gender,
@@ -19,6 +20,7 @@ class AuthRepository {
   }) async {
     try{
       final formData = FormData.fromMap({
+        'name':name,
         'email': email,
         'password': password,
         if (gender != null) 'gender': gender,
