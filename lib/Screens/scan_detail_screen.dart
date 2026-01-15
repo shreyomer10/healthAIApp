@@ -3,29 +3,28 @@ import 'package:provider/provider.dart';
 
 import '../Provider/auth_provider.dart';
 import '../Model/scan_model.dart';
-import '../theme.dart';
 import '../widgets/loader.dart';
+import '../widgets/resultSheetCards.dart';
+import '../theme.dart';
+import '../l10n/generated/app_localizations.dart';
 
 class ScanDetailScreen extends StatefulWidget {
   final ScanModel scan;
-
-  const ScanDetailScreen({
-    super.key,
-    required this.scan,
-  });
+  const ScanDetailScreen({required this.scan, super.key});
 
   @override
   State<ScanDetailScreen> createState() => _ScanDetailScreenState();
 }
 
 class _ScanDetailScreenState extends State<ScanDetailScreen> {
-  ScanDetailModel? detail;
   bool loading = true;
+  String? error;
+  ScanDetailModel? detail;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
   Future<void> _load() async {
@@ -34,225 +33,207 @@ class _ScanDetailScreenState extends State<ScanDetailScreen> {
 
     if (!mounted) return;
 
+    if (res['success'] != true) {
+      setState(() {
+        loading = false;
+        error = res['error'] ?? res['message'];
+      });
+      return;
+    }
+
     setState(() {
-      detail = res;
       loading = false;
+      detail = res['chat'];
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final colors = Theme.of(context).extension<AppColors>()!;
+
+    if (loading) {
+      return Scaffold(
+        backgroundColor: colors.background,
+        body: const Center(child: AppLoader()),
+      );
+    }
+
+    if (error != null) {
+      return Scaffold(
+        backgroundColor: colors.background,
+        appBar: AppBar(
+          backgroundColor: colors.background,
+          iconTheme: IconThemeData(color: colors.textSecondary),
+          title: Text(
+            t.scanDetailTitle,
+            style: TextStyle(color: colors.textSecondary),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              error ?? t.errorGeneric,
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return DetailResultUI(detail: detail!);
+  }
+}
+
+// ==========================================================
+// DETAIL UI
+// ==========================================================
+
+class DetailResultUI extends StatefulWidget {
+  final ScanDetailModel detail;
+  const DetailResultUI({required this.detail});
+
+  @override
+  State<DetailResultUI> createState() => _DetailResultUIState();
+}
+
+class _DetailResultUIState extends State<DetailResultUI> {
+  late ScanDetailModel detail;
+  bool refining = false;
+  final TextEditingController ctrl = TextEditingController();
+  final ScrollController scroll = ScrollController();
+  bool showTopBtn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    detail = widget.detail;
+
+    scroll.addListener(() {
+      if (scroll.offset > 300 && !showTopBtn) {
+        setState(() => showTopBtn = true);
+      } else if (scroll.offset <= 300 && showTopBtn) {
+        setState(() => showTopBtn = false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    scroll.dispose();
+    ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _refine(String txt) async {
+    final auth = context.read<AuthProvider>();
+
+    setState(() => refining = true);
+
+    final refineRes = await auth.refineScan(scanId: detail.id, text: txt);
+
+    if (!mounted) return;
+
+    if (refineRes['success'] != true) {
+      setState(() => refining = false);
+      return;
+    }
+
+    // refresh (backend authoritative)
+    final refresh = await auth.loadChat(detail.id);
+
+    if (!mounted) return;
+
+    setState(() => refining = false);
+
+    if (refresh['success'] != true) return;
+
+    detail = refresh['chat'];
+    ctrl.clear();
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).extension<AppColors>()!;
 
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: colors.background,
-        elevation: 0,
-        foregroundColor: colors.textPrimary,
-        title: const Text('Scan Details'),
+        iconTheme: IconThemeData(color: colors.onSurface),
+        title: Text(
+          t.scanDetailTitle,
+          style: TextStyle(color: colors.onSurface),
+        ),
       ),
-      body: loading
-          ? const AppLoader()
-          : detail == null
-          ? const Center(child: Text('Failed to load scan'))
-          : _body(colors),
-    );
-  }
-
-  Widget _body(AppColors colors) {
-    final s = detail!;
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        if (s.imageUrl != null)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.network(
-              s.imageUrl!,
-              fit: BoxFit.cover,
-            ),
-          ),
-
-        const SizedBox(height: 16),
-
-        _tile('Filename', s.filename ?? '-', colors),
-        _tile('Language', s.language ?? '-', colors),
-        _tile('Created', s.createdAt.toLocal().toString(), colors),
-
-        const SizedBox(height: 16),
-
-        _section('Typed Text', s.typedText, colors),
-        _section('OCR Text', s.ocrText, colors),
-
-        const SizedBox(height: 24),
-
-        _intentSection(s.intent, colors),
-        _confidenceSection('Inference', s.inference, colors),
-        _confidenceSection('Guidance', s.guidance, colors),
-      ],
-    );
-  }
-
-  // ---------- BASIC INFO TILE ----------
-  Widget _tile(String label, String value, AppColors c) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: refining
+          ? const Center(child: AppLoader())
+          : Stack(
         children: [
-          SizedBox(
-            width: 90,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: c.textSecondary,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: c.textPrimary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ---------- TEXT SECTION ----------
-  Widget _section(String title, String? value, AppColors c) {
-    if (value == null || value.trim().isEmpty) {
-      return const SizedBox();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: c.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: c.overlay,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            value,
-            style: TextStyle(color: c.textPrimary),
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  // ---------- INTENT ----------
-  Widget _intentSection(IntentModel? intent, AppColors c) {
-    if (intent == null) return const SizedBox();
-
-    final isRisk = intent.label.toLowerCase() == 'health_risk';
-    final color = isRisk ? Colors.red : Colors.green;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              'Intent',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: c.textPrimary,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Chip(
-              label: Text(intent.label.toUpperCase()),
-              backgroundColor: color.withOpacity(0.15),
-              labelStyle: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: c.overlay,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            intent.reason,
-            style: TextStyle(color: c.textPrimary),
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  // ---------- INFERENCE / GUIDANCE ----------
-  Widget _confidenceSection(
-      String title,
-      ConfidenceBlock? block,
-      AppColors c,
-      ) {
-    if (block == null) return const SizedBox();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: c.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: c.overlay,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          ListView(
+            controller: scroll,
+            padding: const EdgeInsets.all(16),
             children: [
-              Text(
-                block.text,
-                style: TextStyle(color: c.textPrimary),
+              ImageCard(detail.imageUrl),
+              const SizedBox(height: 16),
+
+              ContextInput(refining: refining, onRefine: _refine),
+              if (detail.ingredientScores?.isNotEmpty == true)
+                ProductSummaryCard(detail.ingredientScores!),
+              if (detail.intent != null) IntentCard(detail.intent!),
+              if (detail.inference != null) InferenceCard(detail.inference!),
+              if (detail.guidance != null) GuidanceCard(detail.guidance!),
+
+              if (detail.ingredientScores?.isNotEmpty == true)
+                IngredientScoresCard(detail.ingredientScores!),
+
+              if (detail.mostHarmful?.isNotEmpty == true)
+                MostHarmfulCard(detail.mostHarmful!),
+
+              if (detail.bestAlternative?.isNotEmpty == true)
+                BestAlternativeCard(detail.bestAlternative!),
+
+              OCRCard(
+                userText: detail.typedText,
+                ocrText: detail.ocrText,
               ),
-              const SizedBox(height: 10),
-              LinearProgressIndicator(
-                value: block.confidence,
-                minHeight: 6,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Confidence: ${(block.confidence * 100).toInt()}%',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: c.textSecondary,
+
+              if (detail.age != null || detail.gender != null)
+                DemographicsCard(
+                  age: detail.age,
+                  gender: detail.gender,
                 ),
-              ),
+
+              const SizedBox(height: 60),
             ],
           ),
-        ),
-        const SizedBox(height: 16),
-      ],
+
+          if (showTopBtn)
+            Positioned(
+              right: 18,
+              bottom: 18,
+              child: FloatingActionButton(
+                backgroundColor: colors.accent,
+                onPressed: () {
+                  scroll.animateTo(
+                    0,
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeOut,
+                  );
+                },
+                child: Icon(Icons.arrow_upward, color: colors.textPrimary),
+              ),
+            )
+        ],
+      ),
     );
   }
 }

@@ -80,6 +80,7 @@ flutter:
     - assets/avatars/woman.png
     - assets/avatars/woman2.png
     - assets/google.png
+    - assets/bg.png
 
 
 flutter_icons:

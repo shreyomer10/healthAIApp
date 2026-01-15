@@ -12,17 +12,14 @@ import '../Model/user_model.dart';
 class AuthProvider extends ChangeNotifier {
   final AuthRepository repo;
 
-  bool loading = false;
   bool isLoggedIn = false;
   UserModel? user;
-  String? error;
-  int? statusCode;
-  String? message;
+
   AuthProvider(this.repo);
 
   List<ScanModel> scans = [];
 
-  UploadResponse? lastUpload;
+  ScanResult? lastUpload;
   Future<void> checkLogin() async {
     final token = await SecureStorage.getToken();
     final storedUser = await SecureStorage.getUser();
@@ -37,41 +34,47 @@ class AuthProvider extends ChangeNotifier {
 
 
 
-
-  Future<void> login(String email, String password) async {
-    loading = true;
-    message = null;
-    statusCode = null;
-    error = null;
-    notifyListeners();
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    print('[AUTH] LOGIN_START: $email');
 
     try {
       final (token, user) = await repo.login(email, password);
+
       await SecureStorage.saveToken(token);
       await SecureStorage.saveUser(user);
+
       this.user = user;
       isLoggedIn = true;
-      statusCode = 200;
-      message = 'Login successful';
 
-    }
-    catch (e) {
+      print('[AUTH] LOGIN_SUCCESS => userId=${user.id}');
+
+      return {
+        'success': true,
+        'message': 'Login successful',
+        'error': null,
+        'code': 200,
+      };
+    } catch (e) {
+      print('[AUTH] LOGIN_ERROR => $e');
+
       if (e is ApiException) {
-        error = e.message;
-        statusCode = e.statusCode;
-        message = e.message;
-      } else {
-        statusCode = 500;
-        message = 'Unexpected error';
-        error = message;
+        return {
+          'success': false,
+          'message': e.message,
+          'error': e.message,
+          'code': e.statusCode,
+        };
       }
-    } finally {
-      loading = false;
-      notifyListeners();
+
+      return {
+        'success': false,
+        'message': 'Unexpected error',
+        'error': 'Unexpected error',
+        'code': 500,
+      };
     }
   }
-
-  Future<void> register({
+  Future<Map<String, dynamic>> register({
     required String name,
     required String email,
     required String password,
@@ -79,15 +82,11 @@ class AuthProvider extends ChangeNotifier {
     int? age,
     File? profilePicture,
   }) async {
-    loading = true;
-    message = null;
-    statusCode = null;
-    error = null;
-    notifyListeners();
+    print('[AUTH] REGISTER_START => $email $name');
 
     try {
       await repo.register(
-        name:name,
+        name: name,
         email: email,
         password: password,
         gender: gender,
@@ -95,95 +94,137 @@ class AuthProvider extends ChangeNotifier {
         profilePicture: profilePicture,
       );
 
-      statusCode = 201;
-      message = 'Account created successfully';
-    }
-    catch (e) {
-      if (e is ApiException) {
-        statusCode = e.statusCode;
-        message = e.message;
-        error = e.message;
-      } else {
-        statusCode = 500;
-        message = 'Unexpected error';
-        error = message;
-      }
-    }
+      print('[AUTH] REGISTER_SUCCESS');
 
-    finally {
-      loading = false;
-      notifyListeners();
+      return {
+        'success': true,
+        'message': 'Account created successfully',
+        'error': null,
+        'code': 201,
+      };
+    } catch (e) {
+      print('[AUTH] REGISTER_ERROR => $e');
+
+      if (e is ApiException) {
+        return {
+          'success': false,
+          'message': e.message,
+          'error': e.message,
+          'code': e.statusCode,
+        };
+      }
+
+      return {
+        'success': false,
+        'message': 'Unexpected error',
+        'error': 'Unexpected error',
+        'code': 500,
+      };
     }
   }
 
-  // ---------- FETCH PROFILE ----------
-  Future<void> refreshProfile() async {
-    loading = true;
-    message = null;
-    statusCode = null;
-    notifyListeners();
+
+  Future<Map<String, dynamic>> refreshProfile() async {
+    print('[AUTH] REFRESH_PROFILE_START');
 
     try {
       final profile = await repo.getProfile();
+
       user = profile;
       await SecureStorage.saveUser(profile);
+      notifyListeners(); // valid here
 
-      statusCode = 200;
-      message = 'Profile refreshed';
+      print('[AUTH] REFRESH_PROFILE_SUCCESS');
+
+      return {
+        'success': true,
+        'message': 'Profile refreshed',
+        'error': null,
+        'code': 200,
+      };
     } catch (e) {
+      print('[AUTH] REFRESH_PROFILE_ERROR => $e');
+
       if (e is ApiException) {
-        statusCode = e.statusCode;
-        message = e.message;
-        error = e.message;
-      } else {
-        statusCode = 500;
-        message = 'Unexpected error';
-        error = message;
+        return {
+          'success': false,
+          'message': e.message,
+          'error': e.message,
+          'code': e.statusCode,
+        };
       }
-    } finally {
-      loading = false;
-      notifyListeners();
+
+      return {
+        'success': false,
+        'message': 'Unexpected error',
+        'error': 'Unexpected error',
+        'code': 500,
+      };
     }
   }
 
-  Future<void> updateUser({
+  Future<Map<String, dynamic>> updateUser({
     required String userId,
+    String? name,
     String? password,
     String? gender,
     int? age,
+    String? aiPersonalization,
     File? profilePicture,
   }) async {
-    loading = true;
-    message = null;
-    statusCode = null;
-    notifyListeners();
+    print('[AUTH] UPDATE_USER_START => $userId');
 
     try {
       await repo.updateUser(
         userId: userId,
+        name: name,
         password: password,
         gender: gender,
         age: age,
+        aiPersonalization: aiPersonalization,
         profilePicture: profilePicture,
       );
 
-      statusCode = 200;
-      message = 'Profile updated successfully';
-    } catch (e) {
-      if (e is ApiException) {
-        statusCode = e.statusCode;
-        message = e.message;
-        error = e.message;
-      } else {
-        statusCode = 500;
-        message = 'Unexpected error';
-        error = message;
-      }
-    } finally {
-      loading = false;
+      print('[AUTH] UPDATE_USER_SUCCESS');
+
+      user = user!.copyWith(
+        name: name ?? user!.name,
+        gender: gender ?? user!.gender,
+        age: age ?? user!.age,
+        aiPersonalization: aiPersonalization?? user!.aiPersonalization
+      );
+      await SecureStorage.saveUser(user!);
       notifyListeners();
+
+
+
+      return {
+        'success': true,
+        'message': 'Profile updated successfully',
+        'error': null,
+        'code': 200,
+      };
+    } catch (e) {
+      print('[AUTH] UPDATE_USER_ERROR => $e');
+
+      if (e is ApiException) {
+        return {
+          'success': false,
+          'message': e.message,
+          'error': e.message,
+          'code': e.statusCode,
+        };
+      }
+
+      return {
+        'success': false,
+        'message': 'Unexpected error',
+        'error': 'Unexpected error',
+        'code': 500,
+      };
     }
   }
+
 
   Future<void> logout() async {
     await SecureStorage.clearAll();
@@ -192,202 +233,260 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clearResponse() {
-    message = null;
-    statusCode = null;
-    error = null;
-    notifyListeners();
-  }
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email'],
+  final googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+    clientId: "521219836634-lqvvqrpt3406u79vv83agj5q8q4lgovd.apps.googleusercontent.com",
   );
 
-  Future<void> loginWithGoogle() async {
-    loading = true;
-    error = null;
-    message = null;
-    notifyListeners();
+  Future<Map<String, dynamic>> loginWithGoogle() async {
+    print('[AUTH] GOOGLE_LOGIN_START');
 
     try {
-      // Force account picker every time
-      await _googleSignIn.signOut();
-
-      final GoogleSignInAccount? account =
-      await _googleSignIn.signIn();
-
+      final account = await googleSignIn.signIn();
       if (account == null) {
-        throw Exception("Login cancelled");
+        return {
+          'success': false,
+          'code': 400,
+          'error': 'Login cancelled'
+        };
       }
 
-      // THIS is all you’re getting
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+
+      if (idToken == null) {
+        await googleSignIn.signOut();
+        return {
+          'success': false,
+          'code': 500,
+          'error': 'Missing idToken'
+        };
+      }
+
       final email = account.email;
       final name = account.displayName;
       final photo = account.photoUrl;
+      final googleId = account.id;
 
-      // Fake-login locally
-      user = UserModel(
-        id:"id",
-        email: email,
-        name: name ?? '',
-        profilePicture: photo,
-      );
+      // hit backend
+      final backendResp = await repo.loginWithGoogleRepo(idToken);
 
+      // backend failed → clear google session so user picks new account
+      if (backendResp == null || backendResp['access_token'] == null) {
+        await googleSignIn.signOut();
+        return {
+          'success': false,
+          'code': 401,
+          'error': 'Google backend validation failed'
+        };
+      }
+
+      print('[AUTH] GOOGLE_LOGIN_SUCCESS => email=$email');
+
+      final token = backendResp['access_token'];
+      final backendUser = backendResp['user'];
+
+      // persist like login(email,password)
+      await SecureStorage.saveToken(token);
+      await SecureStorage.saveUser(UserModel.fromJson(backendUser));
+
+      this.user = UserModel.fromJson(backendUser);
       isLoggedIn = true;
 
-      // Optional: persist locally
-      await SecureStorage.saveUser(user!);
+      return {
+        'success': true,
+        'code': 200,
+        'message': 'Login successful',
+        'error': null,
+        'data': {
+          'email': email,
+          'name': name,
+          'photo': photo,
+          'googleId': googleId,
+        }
+      };
 
     } catch (e) {
-      error = e.toString();
-      message = error;
-    } finally {
-      loading = false;
-      notifyListeners();
+      print('[AUTH] GOOGLE_LOGIN_ERROR => $e');
+
+      // ensure switch account works even if exception
+      await googleSignIn.signOut();
+
+      return {
+        'success': false,
+        'code': 500,
+        'error': e.toString()
+      };
     }
   }
 
   // ---------- LOAD PROFILE ----------
-  Future<void> loadProfile() async {
-    loading = true;
-    error = null;
-    message = null;
-    statusCode = null;
-    scans=[];
-    notifyListeners();
+  Future<Map<String, dynamic>> loadProfile() async {
+    print('[AUTH] LOAD_PROFILE_START');
 
     try {
-      final result = await repo.getUserProfile();
-    //  user = result.$1;
-      scans = result;
+      final  scans = await repo.getUserProfile(); // adjust signature
 
-      print('PROVIDER SCANS COUNT => ${scans.length}');
+      this.scans = scans;
 
-      await SecureStorage.saveUser(user!);
+      print('[AUTH] LOAD_PROFILE_SUCCESS => scans=${scans.length}');
 
-      statusCode = 200;
-      message = 'Profile loaded';
+      return {
+        'success': true,
+        'message': 'Profile loaded',
+        'error': null,
+        'code': 200,
+        'scans': scans,
+      };
+
     } catch (e) {
-      print('LOAD PROFILE ERROR => $e');
+      print('[AUTH] LOAD_PROFILE_ERROR => $e');
 
       if (e is ApiException) {
-        error = e.message;
-        statusCode = e.statusCode;
-        message = e.message;
-      } else {
-        error = 'Unexpected error';
-        statusCode = 500;
-        message = error;
+        return {
+          'success': false,
+          'message': e.message,
+          'error': e.message,
+          'code': e.statusCode,
+        };
       }
-    } finally {
-      loading = false;
-      notifyListeners();
+
+      return {
+        'success': false,
+        'message': 'Unexpected error',
+        'error': 'Unexpected error',
+        'code': 500,
+      };
     }
   }
 
-  Future<ScanDetailModel?> loadChat(String chatId) async {
-    loading = true;
-    message = null;
-    statusCode = null;
-    notifyListeners();
+  Future<Map<String, dynamic>> loadChat(String chatId) async {
+    print('[AUTH] LOAD_CHAT_START => $chatId');
 
     try {
       final scan = await repo.getChat(chatId);
-      return scan;
+
+      print('[AUTH] LOAD_CHAT_SUCCESS');
+
+      return {
+        'success': true,
+        'chat': scan,
+        'error': null,
+        'code': 200,
+      };
+
     } catch (e) {
+      print('[AUTH] LOAD_CHAT_ERROR => $e');
+
       if (e is ApiException) {
-        statusCode = e.statusCode;
-        message = e.message;
-        error = e.message;
-      } else {
-        statusCode = 500;
-        message = 'Unexpected error';
-        error = message;
+        return {
+          'success': false,
+          'chat': null,
+          'error': e.message,
+          'message': e.message,
+          'code': e.statusCode,
+        };
       }
-    } finally {
-      loading = false;
-      notifyListeners();
+
+      return {
+        'success': false,
+        'chat': null,
+        'error': 'Unexpected error',
+        'message': 'Unexpected error',
+        'code': 500,
+      };
     }
   }
 
-  Future<void> upload({
+
+  Future<Map<String, dynamic>> upload({
     File? image,
     String? text,
     String? language,
   }) async {
-    loading = true;
-    error = null;
-    message = null;
-    statusCode = null;
-    notifyListeners();
+    print('[SCAN] UPLOAD_START');
 
     try {
-      lastUpload = await repo.uploadScan(image: image, text: text,language: language);
+      final res = await repo.uploadScan(
+        image: image,
+        text: text,
+        language: language,
+      );
 
-      print('PROVIDER OUTPUT => ${lastUpload?.output}');
+      final scan = ScanResult.fromUpload(res, language: language);
 
-      statusCode = 201;
-      message = 'Scan Completed';
+      // store if needed for refine chain
+      lastUpload = scan;
+
+      print('[SCAN] UPLOAD_SUCCESS');
+
+      return {
+        'success': true,
+        'scan': scan,
+        'error': null,
+        'code': 201,
+        'message': 'Scan Completed',
+      };
+
     } catch (e) {
-      if (e is ApiException) {
-        error = e.message;
-        statusCode = e.statusCode;
-        message = e.message;
-      } else {
-        error = 'Unexpected error';
-        print(e);
+      print('[SCAN] UPLOAD_ERROR => $e');
 
-        statusCode = 500;
-        message = error;
+      if (e is ApiException) {
+        return {
+          'success': false,
+          'scan': null,
+          'error': e.message,
+          'code': e.statusCode,
+          'message': e.message,
+        };
       }
-    } finally {
-      loading = false;
-      notifyListeners();
+
+      return {
+        'success': false,
+        'scan': null,
+        'error': 'Unexpected error',
+        'code': 500,
+        'message': 'Unexpected error',
+      };
     }
   }
 
-  Future<void> refineScan({
+
+  Future<Map<String, dynamic>> refineScan({
     required String scanId,
     required String text,
   }) async {
-    loading=true;
-    error = null;
-    message = null;
-    statusCode = null;
-    notifyListeners();
+    print('[SCAN] REFINE_START => $scanId');
 
     try {
-      final res = await repo.refineScan(
+      await repo.refineScan(
         scanId: scanId,
         text: text,
       );
 
-      // 🔥 overwrite only output
-      lastUpload = UploadResponse(
-        scanId: scanId,
-        output: res.output,
-        filename: lastUpload?.filename,
-        imageUrl: lastUpload?.imageUrl,
-      );
-      statusCode = 200;
-      message = 'Refining Completed';
+      print('[SCAN] REFINE_SUCCESS');
+
+      return {
+        'success': true,
+        'message': 'Refining Completed',
+      };
     } catch (e) {
+      print('[SCAN] REFINE_ERROR => $e');
+
       if (e is ApiException) {
-        error = e.message;
-        statusCode = e.statusCode;
-        message = e.message;
-      } else {
-        error = 'Unexpected error';
-        print(e);
-        statusCode = 500;
-        message = error;
+        return {
+          'success': false,
+          'message': e.message,
+        };
       }
-    } finally {
-      loading = false;
-      notifyListeners();
+
+      return {
+        'success': false,
+        'message': 'Unexpected error',
+      };
     }
   }
-
 
 
 }

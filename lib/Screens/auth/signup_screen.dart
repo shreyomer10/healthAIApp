@@ -34,6 +34,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   File? profileImage;
   String? avatarAsset;
+  bool _loading = false;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -146,17 +147,6 @@ class _SignupScreenState extends State<SignupScreen> {
     final t = AppLocalizations.of(context)!;
 
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-
-      if (auth.message != null && auth.statusCode != null) {
-        showResponseCard(
-          context,
-          message: auth.message!,
-        );
-
-        auth.clearResponse();
-      }
-    });
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
@@ -301,27 +291,33 @@ class _SignupScreenState extends State<SignupScreen> {
                         backgroundColor: colors.actionButton,
                         foregroundColor: Colors.white,
                       ),
-                      onPressed: auth.loading
+                      onPressed: _loading
                           ? null
                           : () async {
-                        if (!_formKey.currentState!
-                            .validate()) return;
+                        if (!_formKey.currentState!.validate()) return;
 
-                        await auth.register(
-                          name:name.text.trim(),
+                        setState(() => _loading = true);
+
+                        final res = await auth.register(
+                          name: name.text.trim(),
                           email: emailCtrl.text.trim(),
-                          password:
-                          passCtrl.text.trim(),
+                          password: passCtrl.text.trim(),
                           age: int.parse(ageCtrl.text),
                           gender: gender.toString(),
-                          profilePicture:
-                          profileImage,
+                          profilePicture: profileImage,
                         );
 
                         if (!mounted) return;
-                        Navigator.pushReplacementNamed(
-                            context, '/login');
+                        setState(() => _loading = false);
+
+                        if (res['success'] == true) {
+                          showResponseCard(context, message: res['message']);
+                          Navigator.pushReplacementNamed(context, '/login');
+                        } else {
+                          showResponseCard(context, message: res['error']);
+                        }
                       },
+
                       child: Text(t.createAccount),
                     ),
                   ),
@@ -329,11 +325,14 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
             ),
           ),
-
-          if (auth.loading)
-            Container(
-                color: colors.overlay,
-                child: AppLoader()
+          if (_loading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const Center(
+                  child: AppLoader(),
+                ),
+              ),
             ),
         ],
       ),

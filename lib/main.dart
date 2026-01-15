@@ -90,30 +90,34 @@ class MyApp extends StatelessWidget {
 ThemeData _darkTheme() {
   return ThemeData(
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: Colors.black,
+    scaffoldBackgroundColor: const Color(0xFF0B0F10),
     extensions: const [
       AppColors(
         background: Color(0xFF0B0F10),
-        surface: Color(0xFF12181B),
-        overlay: Color(0x66000000),
+        surface: Color(0xFF151A1E),             // 6–8% lift
+        overlay: Color(0x66000000),             // dim overlay (correct)
+
+        onSurface: Color(0xFFE5ECEC),           // neutral readable, not accent
 
         primary: Color(0xFF3FA7A0),
         primarySoft: Color(0xFF9ADDD6),
         accent: Color(0xFF6FE3D6),
 
-        textPrimary: Colors.white,
-        textSecondary: Colors.white70,
-        textDisabled: Colors.white38,
+        textPrimary: Color(0xFFE5ECEC),
+        textSecondary: Color(0xFF98A4A8),
+        textDisabled: Color(0xFF5E6A6E),
 
-        border: Color(0xFF1F2A2E),
-        divider: Color(0xFF263238),
-          shadow:Color(0xFF263238),
+        border: Color(0xFF20282C),              // subtle but visible
+        divider: Color(0xFF283034),             // slightly stronger for lists
+        shadow: Color(0x33000000),
+
         actionButton: Color(0xFF3FA7A0),
 
         error: Color(0xFFE57373),
         success: Color(0xFF81C784),
         warning: Color(0xFFFFB74D),
 
+        loader: Color(0xFF3FA7A0),
         scannerCorner: Color(0xFF6FE3D6),
       ),
     ],
@@ -124,12 +128,14 @@ ThemeData _darkTheme() {
 ThemeData _lightTheme() {
   return ThemeData(
     brightness: Brightness.light,
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: const Color(0xFFF3F8F7),
     extensions: const [
       AppColors(
-        background: Colors.white,
-        surface: Color(0xFFF4F8F8),
-        overlay: Color(0x11000000),
+        background: Color(0xFFF3F8F7),
+        surface: Color(0xFFFFFFFF),             // true surface for elevation
+        overlay: Color(0x22000000),             // dim overlay for sheets
+
+        onSurface: Color(0xFF0B0F10),
 
         primary: Color(0xFF2F8F88),
         primarySoft: Color(0xFFBEEDE7),
@@ -140,15 +146,16 @@ ThemeData _lightTheme() {
         textDisabled: Color(0xFF9AA7AC),
 
         border: Color(0xFFE0E6E8),
-        divider: Color(0xFFD0D8DB),
+        divider: Color(0xFFD5DEE1),
+        shadow: Color(0x33000000),
 
         actionButton: Color(0xFF2F8F88),
-        shadow:Color(0xFF263238),
 
         error: Color(0xFFD32F2F),
-        success: Color(0xFF388E3C),
+        success: Color(0xFF2E7D32),
         warning: Color(0xFFF57C00),
 
+        loader: Color(0xFF2F8F88),
         scannerCorner: Color(0xFF2F8F88),
       ),
     ],

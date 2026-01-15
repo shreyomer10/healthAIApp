@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:health_ai/widgets/loader.dart';
 import 'package:provider/provider.dart';
 
 import '../Provider/auth_provider.dart';
 import '../Model/scan_model.dart';
 import '../theme.dart';
 import '../l10n/generated/app_localizations.dart';
+import '../widgets/api_error_card.dart';
+import '../widgets/loader.dart';
 import 'scan_detail_screen.dart';
 
 class ScanListScreen extends StatefulWidget {
@@ -16,30 +17,43 @@ class ScanListScreen extends StatefulWidget {
 }
 
 class _ScanListScreenState extends State<ScanListScreen> {
+  bool _loading = true;
+  List<ScanModel> _scans = [];
+
   @override
   void initState() {
     super.initState();
     _load();
   }
 
-  void _load() {
-    context.read<AuthProvider>().loadProfile();
+  Future<void> _load() async {
+    final auth = context.read<AuthProvider>();
+    final res = await auth.loadProfile();
+
+    if (!mounted) return;
+
+    if (res['success'] == true) {
+      setState(() => _scans = (res['scans'] as List<ScanModel>));
+      showResponseCard(context, message: res['message']);
+    } else {
+      setState(() => _scans = []);
+      showResponseCard(context, message: res['error']);
+    }
+
+    setState(() => _loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
     final colors = Theme.of(context).extension<AppColors>()!;
     final t = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: colors.background,
-
-      // ---------- APP BAR ----------
       appBar: AppBar(
         backgroundColor: colors.background,
         elevation: 0,
-        iconTheme: IconThemeData(color: colors.textPrimary),
+        iconTheme: IconThemeData(color: colors.onSurface),
         title: Text(
           t.history,
           style: TextStyle(
@@ -48,22 +62,27 @@ class _ScanListScreenState extends State<ScanListScreen> {
           ),
         ),
       ),
-
-      // ---------- BODY ----------
-      body: _buildBody(auth, colors, t),
+      body: Stack(
+        children: [
+          _buildBody(colors, t),
+          if (_loading)
+            Positioned.fill(
+              child: Container(
+                color: colors.overlay,
+                child: const Center(child: AppLoader()),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _buildBody(
-      AuthProvider auth,
-      AppColors colors,
-      AppLocalizations t,
-      ) {
-    if (auth.loading && auth.scans.isEmpty) {
-      return AppLoader();
+  Widget _buildBody(AppColors colors, AppLocalizations t) {
+    if (_loading && _scans.isEmpty) {
+      return const Center(child: AppLoader());
     }
 
-    if (auth.scans.isEmpty) {
+    if (_scans.isEmpty) {
       return Center(
         child: Text(
           t.noScansFound,
@@ -73,19 +92,19 @@ class _ScanListScreenState extends State<ScanListScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: () async {
-        _load();
-      },
+      color: colors.accent,
+      backgroundColor: colors.surface,
+      onRefresh: _load,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: auth.scans.length,
-        itemBuilder: (context, index) {
-          final scan = auth.scans[index];
+        itemCount: _scans.length,
+        itemBuilder: (_, index) {
+          final scan = _scans[index];
           return _ScanCard(
             scan: scan,
-            colors: colors,
             t: t,
-            onReturn: _load, // 🔥 KEY
+            colors: colors,
+            onReturn: _load,
           );
         },
       ),
@@ -108,103 +127,103 @@ class _ScanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = (scan.typedText != null && scan.typedText!.trim().isNotEmpty)
-        ? scan.typedText!
-        : (scan.ocrText ?? '');
+    final text = _displayText();
+    final created = _formatDate(scan.createdAt, t);
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: colors.surface,
         borderRadius: BorderRadius.circular(16),
-        onTap: () async {
-          // 🔥 WAIT for detail screen to close
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ScanDetailScreen(scan: scan),
-            ),
-          );
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ScanDetailScreen(scan: scan),
+              ),
+            );
 
-          // 🔥 RELOAD after coming back
-          onReturn();
-        },
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colors.overlay,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: colors.shadow,
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: scan.imageUrl != null
-                    ? Image.network(
-                  scan.imageUrl!,
-                  width: 72,
-                  height: 72,
-                  fit: BoxFit.cover,
-                )
-                    : Container(
-                  width: 72,
-                  height: 72,
-                  color: colors.surface,
-                  child: const Icon(Icons.image_not_supported),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Text(
-                    //   '${t.scanId}: ${scan.id.substring(0, 8)}',
-                    //   style: TextStyle(
-                    //     fontSize: 12,
-                    //     color: colors.textSecondary,
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 4),
-                    Text(
-                      text.isEmpty ? t.noTextDetected : text,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: colors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+            onReturn();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                _image(),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        text.isEmpty ? t.noTextDetected : text,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _formatDate(scan.createdAt),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: colors.textSecondary,
+                      const SizedBox(height: 6),
+                      Text(
+                        created,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: colors.textSecondary,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Icon(Icons.chevron_right, color: colors.textSecondary),
-            ],
+                Icon(Icons.chevron_right, color: colors.textSecondary),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  String _formatDate(DateTime dt) {
-    return '${dt.day}/${dt.month}/${dt.year} '
+  Widget _image() {
+    if (scan.imageUrl == null || scan.imageUrl!.trim().isEmpty) {
+      return Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(Icons.image_not_supported, color: colors.textSecondary),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.network(
+        scan.imageUrl!,
+        width: 72,
+        height: 72,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
+
+  String _displayText() {
+    if (scan.typedText != null && scan.typedText!.trim().isNotEmpty) {
+      return scan.typedText!;
+    }
+    return scan.ocrText ?? '';
+  }
+
+  String _formatDate(DateTime dt, AppLocalizations t) {
+    // Localizable date formatting
+    return '${dt.day}/${dt.month}/${dt.year}  '
         '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
   }
 }

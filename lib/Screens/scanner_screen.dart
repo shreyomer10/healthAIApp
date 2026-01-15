@@ -13,10 +13,9 @@ import 'package:sensors_plus/sensors_plus.dart';
 import '../locale/locale_provider.dart';
 import '../theme.dart';
 import '../widgets/loader.dart';
-import '../Provider/auth_provider.dart';
 import 'package:health_ai/l10n/generated/app_localizations.dart';
 
-enum ScanState { looking, stabilizing, capturing, captured }
+enum ScanState { looking, stabilizing, capturing, captured, Gallery }
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -37,20 +36,32 @@ class _ScannerScreenState extends State<ScannerScreen>
   ScanState _scanState = ScanState.looking;
   XFile? _capturedImage;
   bool _sheetOpened = false;
+  bool cameraFlowActive = false;
+  bool galleryFlowActive = false;
 
   StreamSubscription? _accelSub;
   double _lastMagnitude = 0;
   int _stableCount = 0;
 
-  static const int _requiredStableSamples = 15;
-  static const double _motionThreshold = 0.3;
+  static const int _requiredStableSamples = 20;
+  static const double _motionThreshold = 0.5;
 
   // ---------------- LIFECYCLE ----------------
   @override
   void initState() {
     super.initState();
+    cameraFlowActive = true;
+    galleryFlowActive = false;
+
     WidgetsBinding.instance.addObserver(this);
     _initCamera();
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final localeProvider = context.read<LocaleProvider>();
+    _lang = localeProvider.locale?.languageCode ?? 'system';
   }
 
   @override
@@ -69,7 +80,7 @@ class _ScannerScreenState extends State<ScannerScreen>
     if (state == AppLifecycleState.paused) {
       _controller!.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      _initCamera();
+      if (cameraFlowActive && !galleryFlowActive) _initCamera();
     }
   }
 
@@ -99,7 +110,7 @@ class _ScannerScreenState extends State<ScannerScreen>
         _scanState = ScanState.looking;
       });
 
-      Future.delayed(const Duration(milliseconds: 500), _startMotionDetection);
+      Future.delayed(const Duration(milliseconds: 2000), _startMotionDetection);
     } catch (e) {
       debugPrint('Camera init failed: $e');
     }
@@ -108,6 +119,7 @@ class _ScannerScreenState extends State<ScannerScreen>
   // ---------------- MOTION DETECTION ----------------
   void _startMotionDetection() {
     if (_captured) return;
+    if (!cameraFlowActive || galleryFlowActive) return;
 
     _accelSub?.cancel();
     setState(() => _scanState = ScanState.stabilizing);
@@ -144,32 +156,55 @@ class _ScannerScreenState extends State<ScannerScreen>
     _capturedImage = image;
 
     setState(() => _scanState = ScanState.captured);
-    await _uploadCapturedImage();
+    _navigateToResultScreen();
+  }
+  void _navigateToResultScreen() {
+    if (_capturedImage == null) return;
+    cameraFlowActive = false;
+    galleryFlowActive = false;
+
+    // kill accelerometer
+    _accelSub?.cancel();
+    _accelSub = null;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResultScreen(
+          file: File(_capturedImage!.path),
+          language: _lang,
+        ),
+      ),
+    ).then((_) {
+      // restart scanner after coming back
+      _restartFlow();
+    });
   }
 
-  // ---------------- UPLOAD ----------------
-  Future<void> _uploadCapturedImage() async {
-    final auth = context.read<AuthProvider>();
-    if (_capturedImage == null) return;
+  void _restartFlow() async {
+    // kill old state
+    _accelSub?.cancel();
+    _accelSub = null;
 
-    await auth.upload(image: File(_capturedImage!.path),language: _lang);
+    _controller?.dispose();
+    _controller = null;
 
-    if (!mounted) return;
+    cameraFlowActive = true;
+    galleryFlowActive = false;
 
-    if (auth.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error!)),
-      );
-      _resetScanner();
-      return;
+    _captured = false;
+    _cameraReady = false;
+    _stableCount = 0;
+    _lastMagnitude = 0;
+    _capturedImage = null;
+    _scanState = ScanState.looking;
+
+    // delay a tick to allow widget to rebuild clean
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    if (mounted) {
+      _initCamera();
     }
-
-    final result = auth.lastUpload;
-    if (result == null) {
-      throw StateError('Upload succeeded but lastUpload is null');
-    }
-
-    _showResultSheet(result.scanId, result.output);
   }
 
   void _resetScanner() {
@@ -181,6 +216,9 @@ class _ScannerScreenState extends State<ScannerScreen>
 
   // ---------------- GALLERY ----------------
   Future<void> _pickFromGallery() async {
+    cameraFlowActive = false;
+    galleryFlowActive = true;
+    _captured = false; // important to break motion path
     _accelSub?.cancel();
 
     final image = await _picker.pickImage(source: ImageSource.gallery);
@@ -191,9 +229,9 @@ class _ScannerScreenState extends State<ScannerScreen>
 
     _capturedImage = image;
     _captured = true;
-    setState(() => _scanState = ScanState.captured);
+    setState(() => _scanState = ScanState.Gallery);
 
-    await _uploadCapturedImage();
+    _navigateToResultScreen();
   }
 
   // ---------------- UI ----------------
@@ -201,23 +239,16 @@ class _ScannerScreenState extends State<ScannerScreen>
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
     final t = AppLocalizations.of(context)!;
-    final auth = context.watch<AuthProvider>();
-    final localeProvider = context.watch<LocaleProvider>();
-    _lang= localeProvider.locale?.languageCode ?? 'system';
+
     if (_controller == null || !_cameraReady) {
       return const AppLoader();
     }
 
     return Scaffold(
-      body: Stack(
-        children: [
-          _cameraUI(colors, t),
-          if (auth.loading)
-            const Positioned.fill(child: AppLoader()),
-        ],
-      ),
+      body: _cameraUI(colors, t),
     );
   }
+
 
   Widget _cameraUI(AppColors colors, AppLocalizations t) {
     return Stack(
@@ -250,7 +281,12 @@ class _ScannerScreenState extends State<ScannerScreen>
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          const BackButton(color: Colors.white),
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: (_scanState == ScanState.capturing)
+                ? null
+                : () => Navigator.pop(context),
+          ),
           const Spacer(),
           IconButton(
             icon: Icon(
@@ -331,32 +367,10 @@ class _ScannerScreenState extends State<ScannerScreen>
         return t.scanCapturing;
       case ScanState.captured:
         return t.scanCaptured;
+      case ScanState.Gallery:
+        return "Picked from Gallery";
     }
   }
 
-  void _showResultSheet(String scanId, Map<String, dynamic> output) {
-    if (_sheetOpened) {
-      // Sheet already open → just update provider data
-      return;
-    }
-
-    _sheetOpened = true;
-
-    showModalBottomSheet(
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => ResultSheet(
-        scanId: scanId,
-        output: output,
-        onClosed: () {
-          _sheetOpened = false;
-          _resetScanner(); // allow next scan
-        },
-      ),
-    );
-  }
 
 }

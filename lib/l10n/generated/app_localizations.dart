@@ -352,6 +352,12 @@ abstract class AppLocalizations {
   /// **'Logout'**
   String get logout;
 
+  /// No description provided for @scanDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Result'**
+  String get scanDetailTitle;
+
   /// No description provided for @confirm.
   ///
   /// In en, this message translates to:
@@ -415,7 +421,7 @@ abstract class AppLocalizations {
   /// No description provided for @addContext.
   ///
   /// In en, this message translates to:
-  /// **'Provide More Context'**
+  /// **'Add context'**
   String get addContext;
 
   /// No description provided for @contextHint.
@@ -447,6 +453,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue With'**
   String get orContinueWith;
+
+  /// No description provided for @ingredientScores.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredient Scores'**
+  String get ingredientScores;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get errorGeneric;
+
+  /// No description provided for @productScoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Score'**
+  String get productScoreTitle;
+
+  /// No description provided for @verdictHighNotRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Highly not recommended'**
+  String get verdictHighNotRecommended;
+
+  /// No description provided for @verdictModerateUseSparingly.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate – use sparingly'**
+  String get verdictModerateUseSparingly;
+
+  /// No description provided for @verdictSafeToUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe to use'**
+  String get verdictSafeToUse;
+
+  /// No description provided for @contextHint1.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m on cutting phase, gym 5x/week'**
+  String get contextHint1;
+
+  /// No description provided for @contextHint2.
+  ///
+  /// In en, this message translates to:
+  /// **'I have thyroid and lactose intolerance'**
+  String get contextHint2;
+
+  /// No description provided for @contextHint3.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m a vegan bodybuilder'**
+  String get contextHint3;
+
+  /// No description provided for @contextHint4.
+  ///
+  /// In en, this message translates to:
+  /// **'I want to lose weight safely'**
+  String get contextHint4;
+
+  /// No description provided for @contextHint5.
+  ///
+  /// In en, this message translates to:
+  /// **'I workout 6x/week and track macros'**
+  String get contextHint5;
+
+  /// No description provided for @refine.
+  ///
+  /// In en, this message translates to:
+  /// **'Refine'**
+  String get refine;
+
+  /// No description provided for @refining.
+  ///
+  /// In en, this message translates to:
+  /// **'Refining...'**
+  String get refining;
 }
 
 class _AppLocalizationsDelegate

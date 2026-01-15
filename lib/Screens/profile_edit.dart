@@ -8,7 +8,7 @@ import '../theme.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../widgets/api_error_card.dart';
 import '../widgets/loader.dart';
-import 'auth/signup_screen.dart'; // for Gender enum
+import 'auth/signup_screen.dart'; // Gender enum
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -21,24 +21,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController ageCtrl;
-  final passCtrl = TextEditingController();
-  final aiPersonal = TextEditingController();
+  //final passCtrl = TextEditingController();
+  final nameCtrl = TextEditingController();
+  final aiCtrl = TextEditingController();
+
   File? newProfileImage;
   Gender? gender;
+  bool _loading = false;
 
   @override
   void initState() {
     super.initState();
     final user = context.read<AuthProvider>().user!;
+
     ageCtrl = TextEditingController(text: user.age?.toString() ?? '');
+    nameCtrl.text = user.name ?? '';
+    aiCtrl.text = user.aiPersonalization ?? '';
     gender = safeGenderFromString(user.gender);
   }
 
   @override
   void dispose() {
     ageCtrl.dispose();
-    passCtrl.dispose();
-    aiPersonal.dispose();
+  //  passCtrl.dispose();
+    aiCtrl.dispose();
+    nameCtrl.dispose();
     super.dispose();
   }
 
@@ -49,25 +56,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final colors = Theme.of(context).extension<AppColors>()!;
     final t = AppLocalizations.of(context)!;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-
-      if (auth.message != null && auth.statusCode != null) {
-        showResponseCard(
-          context,
-          message: auth.message!,
-        );
-
-        // clear AFTER a short delay
-        Future.delayed(const Duration(milliseconds: 200), () {
-          if (mounted) auth.clearResponse();
-        });
-
-      }
-    });
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
         backgroundColor: colors.background,
+        scrolledUnderElevation: 0,
         title: Text(
           t.editProfile,
           style: TextStyle(color: colors.textPrimary),
@@ -81,7 +74,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                // -------- PROFILE PHOTO --------
                 Center(
                   child: Stack(
                     alignment: Alignment.bottomRight,
@@ -94,23 +86,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             : (user.profilePicture != null
                             ? NetworkImage(user.profilePicture!)
                             : null) as ImageProvider?,
-                        child: newProfileImage == null &&
-                            user.profilePicture == null
-                            ? Icon(Icons.person,
-                            size: 40, color: colors.textSecondary)
+                        child: (newProfileImage == null &&
+                            user.profilePicture == null)
+                            ? Icon(Icons.person, size: 40, color: colors.textSecondary)
                             : null,
                       ),
-                      IconButton(
-                        icon: Icon(Icons.edit, color: colors.primary),
-                        onPressed: () async {
-                          final picked = await ImagePicker()
-                              .pickImage(source: ImageSource.gallery);
-                          if (picked != null) {
-                            setState(() {
-                              newProfileImage = File(picked.path);
-                            });
-                          }
-                        },
+                      Ink(
+                        decoration: BoxDecoration(
+                          color: colors.overlay,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.edit, size: 20, color: colors.primary),
+                          onPressed: () async {
+                            final picked = await ImagePicker()
+                                .pickImage(source: ImageSource.gallery);
+                            if (picked != null) {
+                              setState(() => newProfileImage = File(picked.path));
+                            }
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -121,7 +116,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 TextFormField(
                   initialValue: user.email,
                   enabled: false,
-                  decoration: InputDecoration(labelText: t.email),
+                  style: TextStyle(color: colors.textSecondary),
+                  decoration: InputDecoration(
+                    labelText: t.email,
+                    labelStyle: TextStyle(color: colors.textSecondary),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: colors.border),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: nameCtrl,
+                  style: TextStyle(color: colors.textPrimary),
+                  decoration: _input(t.name, colors),
                 ),
 
                 const SizedBox(height: 16),
@@ -129,35 +140,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 TextFormField(
                   controller: ageCtrl,
                   keyboardType: TextInputType.number,
-                  decoration: InputDecoration(labelText: t.age),
+                  style: TextStyle(color: colors.textPrimary),
+                  decoration: _input(t.age, colors),
                 ),
 
                 const SizedBox(height: 16),
 
                 DropdownButtonFormField<Gender>(
                   value: gender,
-                  decoration: InputDecoration(labelText: t.gender),
+                  dropdownColor: colors.surface,
+                  decoration: _input(t.gender, colors),
+                  style: TextStyle(color: colors.textPrimary),
                   items: const [
                     DropdownMenuItem(value: Gender.male, child: Text('Male')),
                     DropdownMenuItem(value: Gender.female, child: Text('Female')),
                     DropdownMenuItem(
-                        value: Gender.notSpecified,
-                        child: Text('Prefer not to say')),
+                      value: Gender.notSpecified,
+                      child: Text('Prefer not to say'),
+                    ),
                   ],
-                  onChanged: auth.loading ? null : (v) => setState(() => gender = v),
+                  onChanged: _loading ? null : (v) => setState(() => gender = v),
                 ),
 
                 const SizedBox(height: 16),
 
+                // TextFormField(
+                //   controller: passCtrl,
+                //   obscureText: true,
+                //   style: TextStyle(color: colors.textPrimary),
+                //   decoration: _input(t.newPassword, colors),
+                // ),
+                //
+                // const SizedBox(height: 16),
+
                 TextFormField(
-                  controller: passCtrl,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: t.newPassword),
-                ),
-                TextFormField(
-                  controller: aiPersonal,
-                  obscureText: true,
-                  decoration: InputDecoration(labelText: t.personalization),
+                  controller: aiCtrl,
+                  style: TextStyle(color: colors.textPrimary),
+                  decoration: _input(t.personalization, colors),
                 ),
 
                 const SizedBox(height: 32),
@@ -165,22 +184,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 SizedBox(
                   height: 48,
                   child: FilledButton(
-                    onPressed: auth.loading
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colors.actionButton,
+                      foregroundColor: colors.textPrimary,
+                    ),
+                    onPressed: _loading
                         ? null
                         : () async {
-                      final success = await auth.updateUser(
+                      if (!_formKey.currentState!.validate()) return;
+
+                      setState(() => _loading = true);
+
+                      final res = await auth.updateUser(
                         userId: user.id,
-                        age: ageCtrl.text.isNotEmpty
-                            ? int.parse(ageCtrl.text)
-                            : null,
+                        name: nameCtrl.text.isNotEmpty ? nameCtrl.text : null,
+                        aiPersonalization: aiCtrl.text.isNotEmpty ? aiCtrl.text : null,
+                        age: ageCtrl.text.isNotEmpty ? int.parse(ageCtrl.text) : null,
                         gender: gender?.name,
-                        password:
-                        passCtrl.text.isNotEmpty ? passCtrl.text : null,
+                       // password: passCtrl.text.isNotEmpty ? passCtrl.text : null,
                         profilePicture: newProfileImage,
                       );
 
                       if (!mounted) return;
-                      Navigator.pop(context);
+                      setState(() => _loading = false);
+
+                      showResponseCard(context,
+                          message: res['message'] ?? res['error']);
+
+                      if (res['success']) Navigator.pop(context);
                     },
                     child: Text(t.saveChanges),
                   ),
@@ -189,33 +220,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
 
-          // ---------- LOADING OVERLAY ----------
-          if (auth.loading)
+          if (_loading)
             Positioned.fill(
               child: Container(
-                color: Colors.black.withOpacity(0.3),
-                child: const AppLoader(),
+                color: colors.overlay.withOpacity(0.6),
+                child: const Center(child: AppLoader()),
               ),
             ),
         ],
       ),
+    );
+  }
 
+  InputDecoration _input(String label, AppColors c) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: c.textSecondary),
+      border: OutlineInputBorder(
+        borderSide: BorderSide(color: c.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: c.border),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: c.primary),
+        borderRadius: BorderRadius.circular(8),
+      ),
     );
   }
 }
-Gender? safeGenderFromString(String? value) {
-  if (value == null) return null;
 
-  switch (value.toLowerCase()) {
-    case 'male':
-      return Gender.male;
-    case 'female':
-      return Gender.female;
+Gender? safeGenderFromString(String? v) {
+  if (v == null) return null;
+  switch (v.toLowerCase()) {
+    case 'male': return Gender.male;
+    case 'female': return Gender.female;
     case 'notspecified':
     case 'not_specified':
     case 'prefer_not_to_say':
       return Gender.notSpecified;
-    default:
-      return null; // fallback, NO crash
   }
+  return null;
 }

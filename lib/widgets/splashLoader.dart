@@ -16,7 +16,7 @@ class AppLoader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
 
-    final loader = LoadingAnimationWidget.threeRotatingDots(
+    final loader = LoadingAnimationWidget.progressiveDots(
       color: colors.primary,
       size: size,
     );

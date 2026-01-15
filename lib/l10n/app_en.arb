@@ -49,6 +49,7 @@
   "language": "Language",
   "system": "System",
   "logout": "Logout",
+"scanDetailTitle": "Scan Result",
 
   "confirm": "Yes",
   "cancel": "Cancel",
@@ -66,5 +67,25 @@
   "noScansFound":"No Scans Yet",
   "scanId":"Scan Id",
   "continueWithGoogle":"Continue With Google",
-  "orContinueWith":"Continue With"
+  "orContinueWith":"Continue With",
+  "ingredientScores" :"Ingredient Scores",
+"scanDetailTitle": "Scan Result",
+"errorGeneric": "Something went wrong",
+"productScoreTitle": "Product Score",
+"verdictHighNotRecommended": "Highly not recommended",
+"verdictModerateUseSparingly": "Moderate – use sparingly",
+"verdictSafeToUse": "Safe to use",
+
+"contextHint1": "I'm on cutting phase, gym 5x/week",
+"contextHint2": "I have thyroid and lactose intolerance",
+"contextHint3": "I'm a vegan bodybuilder",
+"contextHint4": "I want to lose weight safely",
+"contextHint5": "I workout 6x/week and track macros",
+
+"addContext": "Add context",
+"refine": "Refine",
+"refining": "Refining...",
+"scanDetailTitle": "Scan Result",
+"errorGeneric": "Something went wrong"
+
 }

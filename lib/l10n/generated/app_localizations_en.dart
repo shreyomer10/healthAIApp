@@ -132,6 +132,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Logout';
 
   @override
+  String get scanDetailTitle => 'Scan Result';
+
+  @override
   String get confirm => 'Yes';
 
   @override
@@ -162,7 +165,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalization => 'Personalize Your App';
 
   @override
-  String get addContext => 'Provide More Context';
+  String get addContext => 'Add context';
 
   @override
   String get contextHint => 'I Have fever.';
@@ -178,4 +181,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orContinueWith => 'Continue With';
+
+  @override
+  String get ingredientScores => 'Ingredient Scores';
+
+  @override
+  String get errorGeneric => 'Something went wrong';
+
+  @override
+  String get productScoreTitle => 'Product Score';
+
+  @override
+  String get verdictHighNotRecommended => 'Highly not recommended';
+
+  @override
+  String get verdictModerateUseSparingly => 'Moderate – use sparingly';
+
+  @override
+  String get verdictSafeToUse => 'Safe to use';
+
+  @override
+  String get contextHint1 => 'I\'m on cutting phase, gym 5x/week';
+
+  @override
+  String get contextHint2 => 'I have thyroid and lactose intolerance';
+
+  @override
+  String get contextHint3 => 'I\'m a vegan bodybuilder';
+
+  @override
+  String get contextHint4 => 'I want to lose weight safely';
+
+  @override
+  String get contextHint5 => 'I workout 6x/week and track macros';
+
+  @override
+  String get refine => 'Refine';
+
+  @override
+  String get refining => 'Refining...';
 }

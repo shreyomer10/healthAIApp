@@ -97,12 +97,16 @@ class AuthRepository {
     String? password,
     int? age,
     File? profilePicture,
+    String? aiPersonalization,
+    String? name,
   }) async {
     try{
       final formData = FormData.fromMap({
         'user_id': userId,
         if (gender != null) 'gender': gender,
         if (password != null) 'password': password,
+        if (aiPersonalization != null) 'ai_prefernce': aiPersonalization,
+        if (name != null) 'name': name,
 
         if (age != null) 'age': age,
         if (profilePicture != null)
@@ -146,6 +150,17 @@ class AuthRepository {
     return ScanDetailModel.fromJson(res.data);
   }
 
+  Future<Map<String, dynamic>> loginWithGoogleRepo(String idToken) async {
+    final res = await dio.post(
+      '/login-with-google',
+      data: {
+        'id_token_str': idToken,
+      },
+    );
+
+    // backend already returns a JSON-compatible map
+    return res.data as Map<String, dynamic>;
+  }
 
   // ---------- UPLOAD IMAGE / TEXT ----------
   Future<UploadResponse> uploadScan({
@@ -164,16 +179,19 @@ class AuthRepository {
     return UploadResponse.fromJson(res.data);
   }
   Future<UploadResponse> refineScan({
+
+
     required String scanId,
     required String text,
   }) async {
     final res = await dio.post(
       '/refine-scan',
-      data: {
+      queryParameters: {
         'scan_id': scanId,
         'text': text,
       },
     );
+
 
     return UploadResponse(
       scanId: scanId,

@@ -6,6 +6,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color background;
   final Color surface;
   final Color overlay;
+  final Color onSurface;
 
   // Brand
   final Color primary;
@@ -30,12 +31,13 @@ class AppColors extends ThemeExtension<AppColors> {
 
   // Scanner / special
   final Color scannerCorner;
-
+  final Color loader;
   const AppColors({
     required this.background,
     required this.surface,
     required this.overlay,
     required this.primary,
+    required this.onSurface,
     required this.primarySoft,
     required this.accent,
     required this.textPrimary,
@@ -48,7 +50,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.success,
     required this.warning,
     required this.scannerCorner,
-    required this.shadow
+    required this.shadow,
+    required this.loader
   });
 
   @override
@@ -58,6 +61,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? overlay,
     Color? primary,
     Color? primarySoft,
+    Color? onSurface,
     Color? accent,
     Color? textPrimary,
     Color? textSecondary,
@@ -70,6 +74,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? warning,
     Color? scannerCorner,
     Color? shadow,
+    Color? loader,
   }) {
     return AppColors(
       background: background ?? this.background,
@@ -78,6 +83,7 @@ class AppColors extends ThemeExtension<AppColors> {
       primary: primary ?? this.primary,
       primarySoft: primarySoft ?? this.primarySoft,
       accent: accent ?? this.accent,
+        onSurface: onSurface?? this.onSurface,
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       textDisabled: textDisabled ?? this.textDisabled,
@@ -89,7 +95,7 @@ class AppColors extends ThemeExtension<AppColors> {
       warning: warning ?? this.warning,
       scannerCorner: scannerCorner ?? this.scannerCorner,
       shadow: shadow ?? this.shadow,
-
+      loader: loader?? this.loader
     );
   }
 
@@ -104,7 +110,9 @@ class AppColors extends ThemeExtension<AppColors> {
       primary: Color.lerp(primary, other.primary, t)!,
       primarySoft: Color.lerp(primarySoft, other.primarySoft, t)!,
       accent: Color.lerp(accent, other.accent, t)!,
-      textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
+        onSurface: Color.lerp(onSurface, other.onSurface, t)!,
+
+        textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       textDisabled: Color.lerp(textDisabled, other.textDisabled, t)!,
       border: Color.lerp(border, other.border, t)!,
@@ -115,6 +123,7 @@ class AppColors extends ThemeExtension<AppColors> {
       warning: Color.lerp(warning, other.warning, t)!,
       scannerCorner: Color.lerp(scannerCorner, other.scannerCorner, t)!,
       shadow: Color.lerp(shadow, other.shadow, t)!,
+        loader: loader?? this.loader
 
     );
   }

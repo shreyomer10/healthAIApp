@@ -19,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
-
+  bool _loading = false;
   bool _obscurePassword = true;
 
   @override
@@ -35,30 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
     final colors = theme.extension<AppColors>()!;
     final t = AppLocalizations.of(context)!;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // SHOW RESPONSE
-      if (auth.message != null && auth.statusCode != null) {
-        showResponseCard(
-          context,
-          message: auth.message!,
-        );
-
-        // clear AFTER a short delay
-        Future.delayed(const Duration(milliseconds: 200), () {
-          if (mounted) auth.clearResponse();
-        });
-      }
-
-      // NAVIGATE ONLY ON SUCCESS
-      if (auth.isLoggedIn) {
-        Future.microtask(() {
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/home');
-          }
-        });
-      }
-    });
 
 
     return Scaffold(
@@ -160,16 +136,26 @@ class _LoginScreenState extends State<LoginScreen> {
                           backgroundColor: colors.actionButton,
                           foregroundColor: Colors.white,
                         ),
-                        onPressed: auth.loading
-                            ? null
-                            : () {
-                          if (!_formKey.currentState!
-                              .validate()) return;
-                          auth.login(
-                            emailCtrl.text.trim(),
-                            passCtrl.text.trim(),
-                          );
-                        },
+                          onPressed: _loading ? null : () async {
+                            if (!_formKey.currentState!.validate()) return;
+
+                            setState(() => _loading = true);
+
+                            final res = await auth.login(
+                              emailCtrl.text.trim(),
+                              passCtrl.text.trim(),
+                            );
+
+                            if (!mounted) return;
+                            setState(() => _loading = false);
+
+                            if (res['success'] == true) {
+                              Navigator.pushReplacementNamed(context, '/home');
+                            } else {
+                              showResponseCard(context, message: res['error']);
+                            }
+                          },
+
                         child: Text(t.login),
                       ),
                     ),
@@ -209,11 +195,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: auth.loading
-                            ? null
-                            : () {
-                          auth.loginWithGoogle();
-                        },
+                          onPressed: _loading ? null : () async {
+                            setState(() => _loading = true);
+                            final res = await auth.loginWithGoogle();
+                            if (!mounted) return;
+                            setState(() => _loading = false);
+
+                            if (res['success'] == true) {
+                              Navigator.pushReplacementNamed(context, '/home');
+                            } else {
+                              showResponseCard(context, message: res['error']);
+                            }
+                          },
+
                       ),
                     ),
 
@@ -235,11 +229,16 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          if (auth.loading)
-            Container(
-              color: colors.overlay,
-              child: AppLoader()
+          if (_loading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const Center(
+                  child: AppLoader(),
+                ),
+              ),
             ),
+
         ],
       ),
     );
